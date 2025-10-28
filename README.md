@@ -93,6 +93,10 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 - Website - [https://nestjs.com](https://nestjs.com/)
 - Twitter - [@nestframework](https://twitter.com/nestframework)
 
+## Prisma + Postgres setup
+
+For local development instructions (Postgres + Prisma) see: [PRISMA_SETUP.md](./PRISMA_SETUP.md)
+
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
