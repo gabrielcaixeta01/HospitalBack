@@ -10,7 +10,7 @@ describe('AuthService', () => {
   let jwtService: JwtService;
 
   const mockUser = {
-    id: 1,
+    id: '1',
     username: 'testuser',
     password: 'testpass',
     roles: ['admin'],
@@ -55,7 +55,7 @@ describe('AuthService', () => {
       const result = await authService.validateUser('testuser', 'testpass');
 
       expect(result).toEqual({
-        id: 1,
+        id: '1',
         username: 'testuser',
         roles: ['admin'],
       });
@@ -88,12 +88,12 @@ describe('AuthService', () => {
       mockJwtService.sign.mockReturnValue(expectedToken);
 
       const user = {
-        id: 1,
+        id: '1',
         username: 'testuser',
         roles: ['admin'],
       };
 
-      const result = await authService.login(user);
+      const result = authService.login(user);
 
       expect(result).toEqual({
         accessToken: expectedToken,
@@ -110,7 +110,7 @@ describe('AuthService', () => {
       mockJwtService.sign.mockReturnValue(expectedToken);
 
       const user = {
-        id: 2,
+        id: '2',
         username: 'noroluser',
       };
 
