@@ -1,59 +1,22 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  UseGuards,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { Request } from 'express';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { LoginRequestBody } from './dto/loginRequestBody.dto';
+import { Public } from '../auth/decorators/isPublic.decorator';
 
-interface AuthenticatedRequest extends Request {
-  user: {
-    id: number;
-    username: string;
-    [key: string]: any;
-  };
-}
 
-@Controller('auth')
+@Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
+  @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    const potentialUser = (await this.authService.validateUser(
-      loginDto.username,
-      loginDto.password,
-    )) as unknown;
-
-    if (!potentialUser || typeof potentialUser !== 'object') {
-      throw new UnauthorizedException();
-    }
-
-    const user = potentialUser as {
-      id: number;
-      username: string;
-      [key: string]: any;
-    };
-    const authUser = {
-      ...user,
-      id: String(user.id),
-    };
-    return this.authService.login(authUser);
+  login(@Body() loginRequestBody: LoginRequestBody): Promise<any> {
+    return (this.authService as any).login(loginRequestBody);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Req() req: AuthenticatedRequest): {
-    id: number;
-    username: string;
-    [key: string]: any;
-  } {
+  @Get('me')
+  getProfile(@Request() req) {
     return req.user;
   }
 }

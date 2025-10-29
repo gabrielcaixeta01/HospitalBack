@@ -1,48 +1,48 @@
+/* eslint-disable prettier/prettier */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from './user.service';
-
-type AuthUser = {
-  id: string;
-  username: string;
-  password?: string;
-  roles?: string[];
-};
+import { UserService } from 'src/user/user.service';
+import { LoginRequestBody } from './dto/loginRequestBody.dto';
+import { UserToken } from './types/UserToken';
+import * as bcrypt from 'bcrypt';
+import { UserPayload } from './types/UserPayload';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly usersService: UsersService,
+  constructor(private readonly userService: UserService,
     private readonly jwtService: JwtService,
-  ) {}
+    private readonly configService: ConfigService) {}
 
-  async validateUser(username: string, pass: string) {
-    const user = (await this.usersService.findOneByUsername(username)) as
-      | AuthUser
-      | undefined;
+    async login(LoginRequestBody: LoginRequestBody): Promise<UserToken> {
+      const user = await this.validateUser(LoginRequestBody.email, LoginRequestBody.password);
+      if(!user){
+        throw new UnauthorizedException('Credenciais invalidas');
+      }
 
-    if (user && user.password === pass) {
-      const result = {
-        id: user.id,
-        username: user.username,
-        roles: user.roles ?? [],
+      const payload : UserPayload = { email: user.email, sub: user.id };
+      const jwtSecret = this.configService.get<string>('JWT_SECRET');
+
+      const jwtToken = await this.jwtService.sign(payload, {expiresIn: '1d', secret: jwtSecret});
+      return {
+        access_token: jwtToken,
       };
-      return result;
-    }
-    return null;
-  }
 
-  login(user: AuthUser | null | undefined) {
-    if (!user) {
-      throw new UnauthorizedException();
     }
-    const payload = {
-      username: user.username,
-      sub: user.id,
-      roles: user.roles || [],
-    };
-    return {
-      accessToken: this.jwtService.sign(payload),
-    };
-  }
+    
+
+    async validateUser(email: string, password: string) {
+      const user = await this.userService.findUserByEmail(email);
+
+      if (user) {
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (isPasswordValid) {
+          return { 
+            ...user,
+            password: undefined,};
+        }
+      }
+      return null;
+
+    }
 }
