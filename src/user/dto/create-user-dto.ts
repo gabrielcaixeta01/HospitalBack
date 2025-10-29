@@ -4,6 +4,7 @@ import {
   IsString,
   MinLength,
   Matches,
+  IsOptional,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -28,4 +29,9 @@ export class CreateUserDto {
     message: 'A senha deve conter pelo menos um caractere especial.',
   })
   senha: string;
+
+  // Base64 string (optional) - controller accepts base64 and converts to Buffer
+  @IsOptional()
+  @IsString()
+  profilepic?: string | Buffer;
 }

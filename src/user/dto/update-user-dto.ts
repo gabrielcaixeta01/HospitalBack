@@ -8,4 +8,9 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   senha?: string;
+
+  // Base64 string (optional)
+  @IsOptional()
+  @IsString()
+  profilepic?: string | Buffer;
 }

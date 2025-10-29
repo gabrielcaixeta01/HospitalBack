@@ -12,13 +12,13 @@ export class PacientesService {
     const { nome, cpf, dataNascimento, sexo, telefone, email, observacoes } =
       data;
 
-    const sexoValue = sexo != null ? String(sexo) : undefined;
+    const sexoValue = sexo != null ? (sexo as any) : undefined;
 
     return await this.prisma.paciente.create({
       data: {
         nome,
         cpf,
-        dataNascimento,
+        nascimento: dataNascimento,
         sexo: sexoValue,
         telefone,
         email,
@@ -60,7 +60,12 @@ export class PacientesService {
 
   // Atualiza um paciente e associa/desassocia especialidades
   async updatePaciente(id: number, data: UpdatePacienteDto) {
-    const updatePayload: Partial<UpdatePacienteDto> = { ...data };
+    const updatePayload: any = { ...data };
+    if (updatePayload.sexo != null) updatePayload.sexo = updatePayload.sexo as any;
+    if (updatePayload.dataNascimento != null) {
+      updatePayload.nascimento = updatePayload.dataNascimento;
+      delete updatePayload.dataNascimento;
+    }
 
     return await this.prisma.paciente.update({
       where: {

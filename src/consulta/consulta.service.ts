@@ -9,30 +9,23 @@ export class ConsultasService {
 
   // Cria uma consulta
   async create(data: CreateConsultaDto) {
-    const { pacienteId, medicoId, dataHora, status, motivo } = data;
+    const { pacienteId, medicoId, dataHora, motivo } = data;
 
     return await this.prisma.consulta.create({
       data: {
         pacienteId,
         medicoId,
         dataHora,
-        status,
         motivo,
       },
     });
   }
 
   async createConsulta(data: CreateConsultaDto) {
-    const { pacienteId, medicoId, dataConsulta, status, motivo } = data;
-
+    // backward-compatible alias for create
+    const { pacienteId, medicoId, dataHora, motivo } = data as any;
     return await this.prisma.consulta.create({
-      data: {
-        pacienteId,
-        medicoId,
-        dataConsulta,
-        status,
-        motivo,
-      },
+      data: { pacienteId, medicoId, dataHora, motivo },
     });
   }
 

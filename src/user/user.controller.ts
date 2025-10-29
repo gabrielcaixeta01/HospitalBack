@@ -1,4 +1,4 @@
-import { UserService } from './user.service';
+import { UsersService } from './user.service';
 import {
   Controller,
   Get,
@@ -19,12 +19,12 @@ import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { Public } from 'src/auth/decorators/isPublic.decorator';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { UserPayload } from 'src/auth/types/UserPayload';
+import type { UserPayload } from 'src/auth/types/UserPayload';
 
 @Controller('user')
 export class UserController {
   constructor(
-    private readonly userService: UserService,
+    private readonly userService: UsersService,
     private readonly prisma: PrismaService,
   ) {}
 

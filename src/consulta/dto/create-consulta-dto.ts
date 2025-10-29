@@ -5,18 +5,15 @@ import { IsDate, IsNotEmpty, IsInt } from "class-validator";
 export class CreateConsultaDto {
     @IsNotEmpty()
     @IsInt()
-    pacienteId: bigint;
+    pacienteId: number;
 
     @IsNotEmpty()
     @IsInt()
-    medicoId: bigint;
+    medicoId: number;
 
     @IsNotEmpty()
     @IsDate()
     dataHora: Date;
-
-    @IsNotEmpty()
-    status: string;
 
     @IsNotEmpty()
     motivo: string;

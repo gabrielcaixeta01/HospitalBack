@@ -155,3 +155,15 @@ model ArquivoClinico {
 
   @@map("arquivo_clinico")
 }
+
+// Usuários da aplicação (autenticação/controle de acesso)
+model User {
+  id         BigInt   @id @default(autoincrement())
+  nome       String   @db.VarChar(120)
+  email      String   @unique @db.VarChar(120)
+  senha      String   @db.VarChar(255)
+  profilepic Bytes?
+  criadoEm   DateTime @default(now())
+
+  @@map("usuario")
+}
