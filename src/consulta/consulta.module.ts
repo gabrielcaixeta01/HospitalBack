@@ -1,3 +1,9 @@
-// Renamed from arquivo.module.ts -> consulta.module.ts
+import { Module } from '@nestjs/common';
+import { ConsultasService } from './consulta.service';
+import { ConsultasController } from './consulta.controller';
 
-export {};
+@Module({
+  controllers: [ConsultasController],
+  providers: [ConsultasService],
+})
+export class ConsultasModule {}
