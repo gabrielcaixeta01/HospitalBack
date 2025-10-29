@@ -1,3 +1,9 @@
-// Renamed from arquivo.module.ts -> exame.module.ts
+import { Module } from '@nestjs/common';
+import { ExamesService } from './exame.service';
+import { ExamesController } from './exame.controller';
 
-export {};
+@Module({
+  controllers: [ExamesController],
+  providers: [ExamesService],
+})
+export class ExamesModule {}
