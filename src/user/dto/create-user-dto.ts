@@ -1,13 +1,10 @@
 import {
   IsEmail,
   IsNotEmpty,
-  IsOptional,
   IsString,
-  IsInt,
   MinLength,
   Matches,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
 
 export class CreateUserDto {
   @IsString({ message: 'O nome deve ser uma string.' })
@@ -31,18 +28,4 @@ export class CreateUserDto {
     message: 'A senha deve conter pelo menos um caractere especial.',
   })
   password: string;
-
-  @IsOptional()
-  @IsInt()
-  departmentId?: number;
-
-  @IsOptional()
-  @IsInt()
-  programId?: number;
-
-  @IsOptional()
-  @Transform(({ value }) =>
-    typeof value === 'string' ? Buffer.from(value, 'base64') : null,
-  )
-  profilepic?: Buffer;
 }

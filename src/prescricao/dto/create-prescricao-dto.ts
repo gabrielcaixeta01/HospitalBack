@@ -1,3 +1,12 @@
-// Renamed from create-arquivo-dto.ts -> create-prescricao-dto.ts
+/* eslint-disable prettier/prettier */
+import { IsInt, IsNotEmpty, IsString } from "class-validator";
 
-export {};
+export class CreatePrescricaoDto {
+    @IsNotEmpty()
+    @IsInt()
+    consultaId: bigint;
+
+    @IsString()
+    @IsNotEmpty()
+    texto: string;
+}

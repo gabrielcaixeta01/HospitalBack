@@ -1,3 +1,7 @@
-// Renamed from create-arquivo-dto.ts -> create-especialidade-dto.ts
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export {};
+export class CreateEspecialidadeDto {
+  @IsString()
+  @IsNotEmpty()
+  nome: string;
+}

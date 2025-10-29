@@ -1,3 +1,21 @@
-// Renamed from update-arquivo-dto.ts -> update-consulta-dto.ts
+/* eslint-disable prettier/prettier */
+import { IsDate, IsOptional } from "class-validator";
 
-export {};
+
+export class UpdateConsultaDto {
+    @IsOptional()
+    pacienteId?: bigint;
+
+    @IsOptional()
+    medicoId?: bigint;
+
+    @IsOptional()
+    @IsDate()
+    dataConsulta?: Date;
+
+    @IsOptional()
+    status?: string;
+
+    @IsOptional()
+    motivo?: string;
+}

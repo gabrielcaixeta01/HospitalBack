@@ -1,3 +1,10 @@
-// Renamed from update-arquivo-dto.ts -> update-medico_especialidade-dto.ts
+/* eslint-disable prettier/prettier */
+import { IsOptional } from "class-validator";
 
-export {};
+export class UpdateMedicoEspecialidadeDto {
+    @IsOptional()
+    medicoId?: bigint;
+
+    @IsOptional()
+    especialidadeId?: bigint;
+}

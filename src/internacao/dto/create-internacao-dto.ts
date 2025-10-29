@@ -1,3 +1,19 @@
-// Renamed from create-arquivo-dto.ts -> create-internacao-dto.ts
+/* eslint-disable prettier/prettier */
+import { IsDate, IsNotEmpty, IsOptional } from "class-validator";
 
-export {};
+
+export class CreateInternacaoDto {
+    @IsNotEmpty()
+    pacienteId: bigint;
+
+    @IsNotEmpty()
+    leitoId: bigint;
+
+    @IsNotEmpty()
+    @IsDate()
+    dataEntrada: Date;
+
+    @IsOptional()
+    @IsDate()
+    dataAlta?: Date;
+}

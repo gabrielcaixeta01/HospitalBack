@@ -1,3 +1,15 @@
-// Renamed from create-arquivo-dto.ts -> create-exame-dto.ts
+/* eslint-disable prettier/prettier */
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export {};
+export class CreateExameDto {
+    @IsNotEmpty()
+    consultaId: bigint;
+
+    @IsString()
+    @IsNotEmpty()
+    tipo: string;
+
+    @IsString()
+    @IsNotEmpty()
+    resultado: string;
+}

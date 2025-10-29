@@ -1,3 +1,15 @@
-// Renamed from create-arquivo-dto.ts -> create-leito-dto.ts
+/* eslint-disable prettier/prettier */
+import { IsBoolean, IsNotEmpty, IsString } from "class-validator";
 
-export {};
+export class CreateLeitoDto {
+    @IsString()
+    @IsNotEmpty()
+    ala: string;
+    
+    @IsNotEmpty()
+    numeroLeito: number;
+
+    @IsNotEmpty()
+    @IsBoolean()
+    ocupado: boolean;
+}

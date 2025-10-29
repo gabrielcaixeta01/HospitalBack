@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
 export class UpdateUserDto {
   @IsString()
@@ -8,16 +8,4 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   password?: string;
-
-  @IsInt()
-  @IsOptional()
-  programId?: number;
-
-  @IsOptional()
-  @IsInt()
-  departmentId?: number;
-
-  @IsOptional()
-  @IsString()
-  profilepic?: string | Buffer;
 }

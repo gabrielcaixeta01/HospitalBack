@@ -1,3 +1,12 @@
-// Renamed from update-arquivo-dto.ts -> update-prescricao-dto.ts
+/* eslint-disable prettier/prettier */
+import { IsOptional, IsString, IsInt } from "class-validator";
 
-export {};
+export class UpdatePrescricaoDto {
+    @IsOptional()
+    @IsInt()
+    consultaId?: bigint;
+
+    @IsString()
+    @IsOptional()
+    texto?: string;
+}

@@ -1,3 +1,7 @@
-// Renamed from update-arquivo-dto.ts -> update-especialidade-dto.ts
+import { IsOptional, IsString } from 'class-validator';
 
-export {};
+export class UpdateEspecialidadeDto {
+  @IsString()
+  @IsOptional()
+  nome?: string;
+}

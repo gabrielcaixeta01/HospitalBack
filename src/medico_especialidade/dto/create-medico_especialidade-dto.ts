@@ -1,3 +1,10 @@
-// Renamed from create-arquivo-dto.ts -> create-medico_especialidade-dto.ts
+/* eslint-disable prettier/prettier */
+import { IsNotEmpty } from "class-validator";
 
-export {};
+export class CreateMedicoEspecialidadeDto {
+    @IsNotEmpty()
+    medicoId: bigint;
+
+    @IsNotEmpty()
+    especialidadeId: bigint;
+}
