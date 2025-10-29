@@ -1,3 +1,9 @@
-// Renamed from arquivo.module.ts -> especialidade.module.ts
+import { Module } from '@nestjs/common';
+import { EspecialidadesService } from './especialidade.service';
+import { EspecialidadesController } from './especialidade.controller';
 
-export {};
+@Module({
+  controllers: [EspecialidadesController],
+  providers: [EspecialidadesService],
+})
+export class EspecialidadesModule {}
