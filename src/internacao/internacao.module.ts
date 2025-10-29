@@ -1,3 +1,9 @@
-// Renamed from arquivo.module.ts -> internacao.module.ts
+import { Module } from '@nestjs/common';
+import { InternacoesService } from './internacao.service';
+import { InternacoesController } from './internacao.controller';
 
-export {};
+@Module({
+  controllers: [InternacoesController],
+  providers: [InternacoesService],
+})
+export class InternacoesModule {}
