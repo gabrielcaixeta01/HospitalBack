@@ -7,7 +7,8 @@ export class CreateLeitoDto {
     ala?: string;
 
     @IsOptional()
-    numeroLeito?: number;
+    @IsString()
+    numeroLeito?: string;
 
     @IsOptional()
     @IsBoolean()

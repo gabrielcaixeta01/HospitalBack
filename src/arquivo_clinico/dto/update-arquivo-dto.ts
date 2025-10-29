@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { IsDate, IsOptional, IsString } from "class-validator";
+import { IsDate, IsOptional, IsString, IsInt } from "class-validator";
 
 export class UpdateArquivoDto {
     @IsOptional()
+    @IsInt()
     pacienteId?: bigint;
 
     @IsOptional()

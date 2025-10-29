@@ -1,12 +1,14 @@
 /* eslint-disable prettier/prettier */
-import { IsDate, IsOptional } from "class-validator";
+import { IsDate, IsOptional, IsInt } from "class-validator";
 
 
 export class UpdateInternacaoDto {
     @IsOptional()
+    @IsInt()
     pacienteId?: bigint;
 
     @IsOptional()
+    @IsInt()
     leitoId?: bigint;
 
     @IsOptional()

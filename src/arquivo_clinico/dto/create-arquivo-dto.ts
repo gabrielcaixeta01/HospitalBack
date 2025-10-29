@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { IsDate, IsNotEmpty, IsString } from "class-validator";
+import { IsDate, IsNotEmpty, IsString, IsInt } from "class-validator";
 
 export class CreateArquivoDto {
     @IsNotEmpty()
+    @IsInt()
     pacienteId: bigint;
 
     @IsNotEmpty()

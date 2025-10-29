@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsInt } from 'class-validator';
 
 export class CreateExameDto {
     @IsNotEmpty()
+    @IsInt()
     consultaId: bigint;
 
     @IsString()

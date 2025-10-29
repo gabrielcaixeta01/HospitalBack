@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsInt } from 'class-validator';
 
 export class UpdateExameDto {
     @IsOptional()
+    @IsInt()
     consultaId?: bigint;
 
     @IsString()

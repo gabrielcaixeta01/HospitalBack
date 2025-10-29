@@ -7,7 +7,8 @@ export class CreateLeitoDto {
     ala: string;
     
     @IsNotEmpty()
-    numeroLeito: number;
+    @IsString()
+    numeroLeito: string;
 
     @IsNotEmpty()
     @IsBoolean()
