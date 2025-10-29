@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
-import { IsDate, IsOptional, IsString, IsInt } from "class-validator";
+import { IsDate, IsOptional, IsString, IsInt } from 'class-validator';
 
 export class UpdateArquivoDto {
     @IsOptional()
     @IsInt()
-    pacienteId?: bigint;
+    pacienteId?: number;
 
     @IsOptional()
     @IsString()
@@ -14,7 +14,9 @@ export class UpdateArquivoDto {
     @IsString()
     mimeType?: string;
 
-    conteudo?: Buffer;
+    // base64 or url
+    @IsOptional()
+    conteudo?: string;
 
     @IsOptional()
     @IsDate()

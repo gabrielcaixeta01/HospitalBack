@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
-import { IsDate, IsNotEmpty, IsString, IsInt } from "class-validator";
+import { IsDate, IsNotEmpty, IsString, IsInt, IsOptional } from 'class-validator';
 
 export class CreateArquivoDto {
     @IsNotEmpty()
     @IsInt()
-    pacienteId: bigint;
+    pacienteId: number;
 
     @IsNotEmpty()
     @IsString()
@@ -14,9 +14,11 @@ export class CreateArquivoDto {
     @IsString()
     mimeType: string;
 
-    conteudo: Buffer;
+    // base64 content or url — optional, service will accept and store as url/base64
+    @IsOptional()
+    conteudo?: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsDate()
-    criadoEm: Date;
+    criadoEm?: Date;
 }
