@@ -16,7 +16,7 @@ export class CreatePacienteDto {
 
     @IsString()
     @IsNotEmpty()
-    sexo: Enumerator;
+    sexo: string;
 
     @IsString()
     @IsNotEmpty()

@@ -16,7 +16,7 @@ export class UpdatePacienteDto {
 
     @IsString()
     @IsOptional()
-    sexo?: Enumerator;
+    sexo?: string;
 
     @IsString()
     @IsOptional()
