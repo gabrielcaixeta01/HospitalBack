@@ -1,3 +1,34 @@
-// Renamed from update-arquivo-dto.ts -> update-paciente-dto.ts
+/* eslint-disable prettier/prettier */
+import { IsEmail, IsOptional, IsString } from "class-validator";
 
-export {};
+export class UpdatePacienteDto {
+    @IsString()
+    @IsOptional()
+    nome?: string;
+
+    @IsString()
+    @IsOptional()
+    cpf?: string;
+
+    @IsString()
+    @IsOptional()
+    dataNascimento?: Date;
+
+    @IsString()
+    @IsOptional()
+    sexo?: Enumerator;
+
+    @IsString()
+    @IsOptional()
+    telefone?: string;
+
+    @IsEmail()
+    @IsOptional()
+    email?: string;
+
+    @IsString()
+    @IsOptional()
+    observacoes?: string;
+    
+
+}

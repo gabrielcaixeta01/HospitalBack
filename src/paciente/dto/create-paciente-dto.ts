@@ -1,3 +1,34 @@
-// Renamed from create-arquivo-dto.ts -> create-paciente-dto.ts
+/* eslint-disable prettier/prettier */
+import { IsEmail, IsOptional, IsString, IsNotEmpty } from "class-validator";
 
-export {};
+export class CreatePacienteDto {
+    @IsString()
+    @IsNotEmpty()
+    nome: string;
+
+    @IsString()
+    @IsNotEmpty()
+    cpf: string;
+
+    @IsString()
+    @IsNotEmpty()
+    dataNascimento: Date;
+
+    @IsString()
+    @IsNotEmpty()
+    sexo: Enumerator;
+
+    @IsString()
+    @IsNotEmpty()
+    telefone: string;
+
+    @IsEmail()
+    @IsNotEmpty()
+    email: string;
+
+    @IsString()
+    @IsOptional()
+    observacoes?: string;
+    
+
+}
