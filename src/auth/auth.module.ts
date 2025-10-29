@@ -14,7 +14,7 @@ import { jwtConstants } from './constants';
     JwtModule.register({
       secret: jwtConstants.secret,
       // jwtConstants.expiresIn usually comes from env and is a string like '1h'
-  signOptions: { expiresIn: jwtConstants.expiresIn as any },
+      signOptions: { expiresIn: jwtConstants.expiresIn },
     }),
   ],
   controllers: [AuthController],

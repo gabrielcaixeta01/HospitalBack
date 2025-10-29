@@ -1,3 +1,4 @@
-// Renamed from arquivo.controller.ts -> prescricao.controller.ts
+import { Controller } from '@nestjs/common';
 
-export {};
+@Controller('prescricao')
+export class PrescricaoController {}

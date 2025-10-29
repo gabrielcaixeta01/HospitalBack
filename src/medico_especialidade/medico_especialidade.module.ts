@@ -1,3 +1,10 @@
-// Renamed from arquivo.module.ts -> medico_especialidade.module.ts
+import { Module } from '@nestjs/common';
+import { MedicoEspecialidadeController } from './medico_especialidade.controller';
+import { MedicoEspecialidadeService } from './medico_especialidade.service';
 
-export {};
+@Module({
+	controllers: [MedicoEspecialidadeController],
+	providers: [MedicoEspecialidadeService],
+	exports: [MedicoEspecialidadeService],
+})
+export class MedicoEspecialidadeModule {}

@@ -1,3 +1,10 @@
-// Renamed from arquivo.module.ts -> prescricao.module.ts
+import { Module } from '@nestjs/common';
+import { PrescricaoController } from './prescricao.controller';
+import { PrescricaoService } from './prescricao.service';
 
-export {};
+@Module({
+	controllers: [PrescricaoController],
+	providers: [PrescricaoService],
+	exports: [PrescricaoService],
+})
+export class PrescricaoModule {}

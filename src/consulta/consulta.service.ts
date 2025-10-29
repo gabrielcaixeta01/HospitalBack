@@ -23,7 +23,7 @@ export class ConsultasService {
 
   async createConsulta(data: CreateConsultaDto) {
     // backward-compatible alias for create
-    const { pacienteId, medicoId, dataHora, motivo } = data as any;
+    const { pacienteId, medicoId, dataHora, motivo } = data;
     return await this.prisma.consulta.create({
       data: { pacienteId, medicoId, dataHora, motivo },
     });

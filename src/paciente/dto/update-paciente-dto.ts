@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { IsEmail, IsOptional, IsString } from "class-validator";
+import { IsEmail, IsOptional, IsString, IsDate, IsIn } from 'class-validator';
 
 export class UpdatePacienteDto {
     @IsString()
@@ -10,13 +10,13 @@ export class UpdatePacienteDto {
     @IsOptional()
     cpf?: string;
 
-    @IsString()
+    @IsDate()
     @IsOptional()
     dataNascimento?: Date;
 
-    @IsString()
     @IsOptional()
-    sexo?: string;
+    @IsIn(['M', 'F', 'O'])
+    sexo?: 'M' | 'F' | 'O';
 
     @IsString()
     @IsOptional()
@@ -29,6 +29,4 @@ export class UpdatePacienteDto {
     @IsString()
     @IsOptional()
     observacoes?: string;
-    
-
 }

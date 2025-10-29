@@ -1,3 +1,6 @@
-// Renamed from arquivo.service.ts -> prescricao.service.ts
 
-export {};
+
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class PrescricaoService {}

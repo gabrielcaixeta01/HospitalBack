@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePacienteDto } from './dto/create-paciente-dto';
 import { UpdatePacienteDto } from './dto/update-paciente-dto';
+import type { Sexo } from '@prisma/client';
 
 @Injectable()
 export class PacientesService {
@@ -12,7 +13,12 @@ export class PacientesService {
     const { nome, cpf, dataNascimento, sexo, telefone, email, observacoes } =
       data;
 
-    const sexoValue = sexo != null ? (sexo as any) : undefined;
+    let sexoValue: Sexo | undefined = undefined;
+    if (sexo != null) {
+      if (sexo === 'M' || sexo === 'F' || sexo === 'O')
+        sexoValue = sexo as Sexo;
+      else throw new Error('Valor de sexo inválido');
+    }
 
     return await this.prisma.paciente.create({
       data: {
@@ -60,8 +66,12 @@ export class PacientesService {
 
   // Atualiza um paciente e associa/desassocia especialidades
   async updatePaciente(id: number, data: UpdatePacienteDto) {
-    const updatePayload: any = { ...data };
-    if (updatePayload.sexo != null) updatePayload.sexo = updatePayload.sexo as any;
+    const updatePayload: Partial<Record<string, unknown>> = { ...data };
+    if (updatePayload.sexo != null) {
+      const s = updatePayload.sexo as unknown as string;
+      if (s === 'M' || s === 'F' || s === 'O') updatePayload.sexo = s;
+      else throw new Error('Valor de sexo inválido');
+    }
     if (updatePayload.dataNascimento != null) {
       updatePayload.nascimento = updatePayload.dataNascimento;
       delete updatePayload.dataNascimento;
@@ -71,7 +81,7 @@ export class PacientesService {
       where: {
         id,
       },
-      data: updatePayload,
+      data: updatePayload as any,
     });
   }
 }

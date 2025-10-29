@@ -1,3 +1,4 @@
-// Renamed from arquivo.controller.ts -> leito.controller.ts
+import { Controller } from '@nestjs/common';
 
-export {};
+@Controller('leito')
+export class LeitoController {}

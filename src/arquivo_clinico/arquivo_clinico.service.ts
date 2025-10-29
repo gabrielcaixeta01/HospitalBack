@@ -1,3 +1,4 @@
-// Renamed from arquivo.service.ts -> arquivo_clinico.service.ts
+import { Injectable } from '@nestjs/common';
 
-export {};
+@Injectable()
+export class ArquivoClinicoService {}
