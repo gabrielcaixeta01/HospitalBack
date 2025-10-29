@@ -13,7 +13,7 @@ export class CreateConsultaDto {
 
     @IsNotEmpty()
     @IsDate()
-    dataConsulta: Date;
+    dataHora: Date;
 
     @IsNotEmpty()
     status: string;

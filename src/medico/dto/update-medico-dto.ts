@@ -1,19 +1,20 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+/* eslint-disable prettier/prettier */
+import { IsEmail, IsOptional, IsString, IsArray, IsInt } from 'class-validator';
 
 export class UpdateMedicoDto {
-  @IsString()
-  @IsNotEmpty()
-  nome?: string;
+  @IsOptional() @IsString() nome?: string;
+  @IsOptional() @IsString() crm?: string;
+  @IsOptional() @IsString() telefone?: string;
+  @IsOptional() @IsEmail() email?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  crm?: string;
+  // Mutação incremental
+  @IsOptional() @IsArray() @IsInt({ each: true })
+  especialidadeIdsToConnect?: number[];
 
-  @IsString()
-  @IsOptional()
-  telefone?: string;
+  @IsOptional() @IsArray() @IsInt({ each: true })
+  especialidadeIdsToDisconnect?: number[];
 
-  @IsEmail()
-  @IsOptional()
-  email?: string;
+  // Substituição completa (set)
+  @IsOptional() @IsArray() @IsInt({ each: true })
+  replaceEspecialidadeIds?: number[];
 }

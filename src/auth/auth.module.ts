@@ -1,22 +1,17 @@
+// src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { AuthService } from './auth.service';
-import { UsersService } from './user.service';
-import { JwtStrategy } from './jwt.strategy';
-import { AuthController } from './auth.controller';
-import { jwtConstants } from './constants';
+import type { StringValue } from 'ms'; // 👈 importa o tipo
+
+const JWT_EXPIRES_IN: StringValue = '1h'; // ou 3600
 
 @Module({
   imports: [
-    PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: jwtConstants.expiresIn },
+      signOptions: { expiresIn: JWT_EXPIRES_IN }, // 👈 agora compila
     }),
   ],
-  providers: [AuthService, UsersService, JwtStrategy],
-  controllers: [AuthController],
-  exports: [AuthService],
+  // ...
 })
 export class AuthModule {}

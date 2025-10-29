@@ -9,7 +9,7 @@ import {
 export class CreateUserDto {
   @IsString({ message: 'O nome deve ser uma string.' })
   @IsNotEmpty({ message: 'O nome é obrigatório.' })
-  name: string;
+  nome: string;
 
   @IsEmail({}, { message: 'O e-mail deve ser válido.' })
   @IsNotEmpty({ message: 'O e-mail é obrigatório.' })
@@ -27,5 +27,5 @@ export class CreateUserDto {
   @Matches(/(?=.*[@$!%*?&])/, {
     message: 'A senha deve conter pelo menos um caractere especial.',
   })
-  password: string;
+  senha: string;
 }

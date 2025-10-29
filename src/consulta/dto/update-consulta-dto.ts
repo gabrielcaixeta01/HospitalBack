@@ -13,7 +13,7 @@ export class UpdateConsultaDto {
 
     @IsOptional()
     @IsDate()
-    dataConsulta?: Date;
+    dataHora?: Date;
 
     @IsOptional()
     status?: string;
