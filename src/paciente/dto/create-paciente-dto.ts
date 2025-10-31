@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { IsEmail, IsOptional, IsString, IsNotEmpty, IsDate, IsIn } from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsNotEmpty, IsIn, IsDateString } from 'class-validator';
 
 export class CreatePacienteDto {
     @IsString()
@@ -10,7 +10,7 @@ export class CreatePacienteDto {
     @IsNotEmpty()
     cpf: string;
 
-    @IsDate()
+    @IsDateString()
     @IsNotEmpty()
     dataNascimento: Date;
 
