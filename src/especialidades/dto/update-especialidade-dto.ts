@@ -1,12 +1,6 @@
-/* eslint-disable prettier/prettier */
-import { IsInt, IsOptional } from "class-validator";
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateEspecialidadeDto } from './create-especialidade-dto';
 
-export class UpdateMedicoEspecialidadeDto {
-    @IsOptional()
-    @IsInt()
-    medicoId?: bigint;
-
-    @IsOptional()
-    @IsInt()
-    especialidadeId?: bigint;
-}
+export class UpdateEspecialidadeDto extends PartialType(
+  CreateEspecialidadeDto,
+) {}

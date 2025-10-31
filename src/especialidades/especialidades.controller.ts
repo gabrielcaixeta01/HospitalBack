@@ -4,11 +4,12 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { EspecialidadesService } from './especialidades.service';
 import { CreateEspecialidadeDto } from './dto/create-especialidade-dto';
+import { UpdateEspecialidadeDto } from './dto/update-especialidade-dto';
 
 @Controller('especialidades')
 export class EspecialidadesController {
@@ -25,12 +26,17 @@ export class EspecialidadesController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateEspecialidadeDto) {
+    return this.service.update(id, dto);
+  }
+
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') id: string) {
     return this.service.remove(id);
   }
 }
