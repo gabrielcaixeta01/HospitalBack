@@ -40,42 +40,31 @@ model Paciente {
 }
 
 model Medico {
-  id            BigInt              @id @default(autoincrement())
-  nome          String              @db.VarChar(120)
-  crm           String?             @unique @db.VarChar(40)
-  email         String?             @db.VarChar(120)
-  telefone      String?             @db.VarChar(40)
+  id             BigInt         @id @default(autoincrement())
+  nome           String         @db.VarChar(120)
+  crm            String?        @unique @db.VarChar(40)
+  email          String?        @db.VarChar(120)
+  telefone       String?        @db.VarChar(40)
 
-  consultas     Consulta[]
-  especialidades MedicoEspecialidade[]
+  consultas      Consulta[]
+
+  // 👇 MANY-TO-MANY implícito com Especialidade
+  especialidades Especialidade[]
 
   @@map("medico")
 }
 
 model Especialidade {
-  id     BigInt               @id @default(autoincrement())
-  nome   String               @unique @db.VarChar(80)
+  id      BigInt    @id @default(autoincrement())
+  nome    String    @unique @db.VarChar(80)
 
-  medicos MedicoEspecialidade[]
+  // 👇 lado oposto do M:N implícito
+  medicos Medico[]
 
   @@map("especialidade")
 }
 
-// Tabela de junção many-to-many (medico <-> especialidade)
-model MedicoEspecialidade {
-  id               BigInt        @id @default(autoincrement())
-  medicoId         BigInt
-  especialidadeId  BigInt
-
-  medico           Medico        @relation(fields: [medicoId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  especialidade    Especialidade @relation(fields: [especialidadeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-
-  @@index([medicoId])
-  @@index([especialidadeId])
-  @@unique([medicoId, especialidadeId], name: "medico_especialidade_unique_pair")
-
-  @@map("medico_especialidade")
-}
+// ⚠️ REMOVIDO: model MedicoEspecialidade (não é usado no M:N implícito)
 
 // Ex.: consultas ambulatoriais ligando paciente e médico
 model Consulta {

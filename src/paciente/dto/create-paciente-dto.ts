@@ -12,7 +12,7 @@ export class CreatePacienteDto {
 
     @IsDateString()
     @IsNotEmpty()
-    dataNascimento: Date;
+    dataNascimento: string;
 
     @IsOptional()
     @IsIn(['M', 'F', 'O'])
