@@ -43,7 +43,7 @@ export class MedicosService {
           ...(Array.isArray(especialidadeIds) && especialidadeIds.length > 0
             ? {
                 especialidades: {
-                  connect: especialidadeIds.map((id) => ({ id })),
+                  connect: (especialidadeIds ?? []).map((id) => ({ id: BigInt(id) })),
                 },
               }
             : {}),
