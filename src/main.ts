@@ -28,9 +28,17 @@ async function bootstrap() {
   );
   // Set API prefix (versioning)
   app.setGlobalPrefix('api/v1');
-  app.setGlobalPrefix('api/v1');
 
-  await app.listen(process.env.PORT || 3000);
+  const port = Number(process.env.PORT) || 4000;
+  await app.listen(port);
+
+  // Informative startup log with port and environment
+  // This helps quickly verify where the server is reachable
+  // and is useful in containerized/deployed environments.
+  // Use console.log so it appears in standard output.
+  console.log(
+    `Server started on port ${port} (env=${process.env.NODE_ENV || 'development'})`,
+  );
 }
 bootstrap().catch((err) => {
   console.error(err);
