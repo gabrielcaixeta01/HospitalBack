@@ -7,6 +7,8 @@ import { MedicosModule } from './medico/medico.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { EspecialidadesModule } from './especialidades/especialidades.module';
 import { ConsultasModule } from './consulta/consulta.module';
+import { InternacoesModule } from './internacao/internacao.module';
+import { LeitosModule } from './leito/leito.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { ConsultasModule } from './consulta/consulta.module';
     MedicosModule,
     EspecialidadesModule,
     ConsultasModule,
+    InternacoesModule,
+    LeitosModule,
   ],
   controllers: [AppController],
   providers: [AppService],

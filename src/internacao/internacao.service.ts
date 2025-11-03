@@ -1,79 +1,89 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import type { Prisma } from '@prisma/client';
 import { CreateInternacaoDto } from './dto/create-internacao-dto';
 import { UpdateInternacaoDto } from './dto/update-internacao-dto';
+
+function toDateOrNull(iso?: string | null) {
+  if (iso == null || iso === '') return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) throw new BadRequestException('Data inválida: ' + iso);
+  return d;
+}
 
 @Injectable()
 export class InternacoesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Cria uma internação
   async create(data: CreateInternacaoDto) {
     const { pacienteId, leitoId, dataEntrada, dataAlta } = data;
 
-    return await this.prisma.internacao.create({
+    return this.prisma.internacao.create({
       data: {
         pacienteId,
         leitoId,
-        dataEntrada,
-        dataAlta,
+        dataEntrada: toDateOrNull(dataEntrada)!, // obrigatório
+        dataAlta: toDateOrNull(dataAlta ?? null),
+      },
+      include: {
+        paciente: { select: { id: true, nome: true } },
+        leito: { select: { id: true, codigo: true } },
       },
     });
   }
 
-  // Retorna todas as internações
   async findAll() {
-    return await this.prisma.internacao.findMany({
+    return this.prisma.internacao.findMany({
+      orderBy: { id: 'asc' },
       include: {
-        paciente: true,
-        leito: true,
+        paciente: { select: { id: true, nome: true } },
+        leito: { select: { id: true, codigo: true } },
       },
     });
   }
 
-  async findInternacao(id: number) {
-    const internacao = await this.prisma.internacao.findUnique({
+  async findOne(id: number) {
+    const item = await this.prisma.internacao.findUnique({
       where: { id },
       include: {
-        paciente: true,
-        leito: true,
+        paciente: { select: { id: true, nome: true } },
+        leito: { select: { id: true, codigo: true } },
       },
     });
-
-    if (!internacao) {
-      throw new NotFoundException(`Internação com ID ${id} não encontrada.`);
-    }
-
-    return internacao;
+    if (!item) throw new NotFoundException(`Internação ${id} não encontrada.`);
+    return item;
   }
 
-  async deleteInternacao(id: number) {
-    const internacao = await this.prisma.internacao.findUnique({
+  async update(id: number, data: UpdateInternacaoDto) {
+    await this.ensureExists(id);
+    const payload: Prisma.InternacaoUpdateInput = {};
+    if (data.pacienteId != null) payload.paciente = { connect: { id: data.pacienteId } };
+    if (data.leitoId != null) payload.leito = { connect: { id: data.leitoId } };
+    if (data.dataEntrada !== undefined) {
+      const d = toDateOrNull(data.dataEntrada ?? null);
+      if (d === null) throw new BadRequestException('dataEntrada não pode ser nula.');
+      payload.dataEntrada = d;
+    }
+    if (data.dataAlta !== undefined) payload.dataAlta = toDateOrNull(data.dataAlta ?? null);
+    return this.prisma.internacao.update({
       where: { id },
-    });
-
-    if (!internacao) {
-      throw new NotFoundException(`Internação com ID ${id} não encontrada.`);
-    }
-
-    return await this.prisma.internacao.delete({
-      where: {
-        id,
+      data: payload,
+      include: {
+        paciente: { select: { id: true, nome: true } },
+        leito: { select: { id: true, codigo: true } },
       },
     });
   }
 
-  // Atualiza uma internação
-  async updateInternacao(id: number, data: UpdateInternacaoDto) {
-    const { ...updateData } = data;
+  async remove(id: number) {
+    // garante 404 claro
+    await this.ensureExists(id);
+    return this.prisma.internacao.delete({ where: { id } });
+  }
 
-    return await this.prisma.internacao.update({
-      where: {
-        id,
-      },
-      data: {
-        ...updateData,
-      },
-    });
+  private async ensureExists(id: number) {
+    const found = await this.prisma.internacao.findUnique({ where: { id } });
+    if (!found) throw new NotFoundException(`Internação ${id} não encontrada.`);
   }
 }

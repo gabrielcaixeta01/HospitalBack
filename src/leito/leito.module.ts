@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { LeitoController } from './leito.controller';
-import { LeitoService } from './leito.service';
+import { PrismaModule } from 'src/prisma/prisma.module';
+import { LeitosController } from './leito.controller';
 
 @Module({
-  controllers: [LeitoController],
-  providers: [LeitoService],
-  exports: [LeitoService],
+  imports: [PrismaModule],
+  controllers: [LeitosController],
 })
-export class LeitoModule {}
+export class LeitosModule {}

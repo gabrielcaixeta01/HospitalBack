@@ -1,21 +1,19 @@
 /* eslint-disable prettier/prettier */
-import { IsDate, IsNotEmpty, IsOptional, IsInt } from "class-validator";
-
+import { IsInt, IsOptional, IsISO8601, Min } from 'class-validator';
 
 export class CreateInternacaoDto {
-    @IsNotEmpty()
-    @IsInt()
-    pacienteId: bigint;
+  @IsInt()
+  @Min(1)
+  pacienteId!: number;
 
-    @IsNotEmpty()
-    @IsInt()
-    leitoId: bigint;
+  @IsInt()
+  @Min(1)
+  leitoId!: number;
 
-    @IsNotEmpty()
-    @IsDate()
-    dataEntrada: Date;
+  @IsISO8601({ strict: true }, { message: 'dataEntrada deve ser ISO 8601' })
+  dataEntrada!: string; // ISO string
 
-    @IsOptional()
-    @IsDate()
-    dataAlta?: Date;
+  @IsOptional()
+  @IsISO8601({ strict: true }, { message: 'dataAlta deve ser ISO 8601' })
+  dataAlta?: string | null; // ISO string ou null
 }

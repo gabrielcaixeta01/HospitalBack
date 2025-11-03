@@ -1,21 +1,22 @@
 /* eslint-disable prettier/prettier */
-import { IsDate, IsOptional, IsInt } from "class-validator";
-
+import { IsInt, IsOptional, IsISO8601, Min } from 'class-validator';
 
 export class UpdateInternacaoDto {
-    @IsOptional()
-    @IsInt()
-    pacienteId?: bigint;
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  pacienteId?: number;
 
-    @IsOptional()
-    @IsInt()
-    leitoId?: bigint;
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  leitoId?: number;
 
-    @IsOptional()
-    @IsDate()
-    dataEntrada?: Date;
+  @IsOptional()
+  @IsISO8601({ strict: true })
+  dataEntrada?: string; // ISO opcional
 
-    @IsOptional()
-    @IsDate()
-    dataAlta?: Date;
+  @IsOptional()
+  @IsISO8601({ strict: true })
+  dataAlta?: string | null; // ISO opcional
 }

@@ -1,63 +1,47 @@
+/* eslint-disable prettier/prettier */
+import {
+  Body, Controller, Get, Post, Patch, Delete,
+  Param, ParseIntPipe, ValidationPipe,
+} from '@nestjs/common';
 import { Public } from 'src/auth/decorators/isPublic.decorator';
+import { InternacoesService } from './internacao.service';
 import { CreateInternacaoDto } from './dto/create-internacao-dto';
 import { UpdateInternacaoDto } from './dto/update-internacao-dto';
-import { InternacoesService } from './internacao.service';
-import {
-  Body,
-  Controller,
-  Post,
-  Get,
-  ValidationPipe,
-  Param,
-  ParseIntPipe,
-  Delete,
-  Patch,
-  NotFoundException,
-} from '@nestjs/common';
 
 @Controller('internacoes')
 export class InternacoesController {
-  constructor(private readonly internacoesService: InternacoesService) {}
+  constructor(private readonly service: InternacoesService) {}
 
-  // Cria uma internação
-  @Public()
-  @Post()
-  async create(@Body(ValidationPipe) internacaoData: CreateInternacaoDto) {
-    return this.internacoesService.create(internacaoData);
-  }
-
-  // Retorna todas as internações
   @Public()
   @Get()
   findAll() {
-    return this.internacoesService.findAll();
+    return this.service.findAll();
   }
 
-  // Retorna uma internação específica pelo ID
   @Public()
   @Get(':id')
-  async findInternacao(@Param('id', ParseIntPipe) id: number) {
-    const internacao = await this.internacoesService.findInternacao(id);
-    if (!internacao) {
-      throw new NotFoundException(`Internação com ID ${id} não encontrada.`);
-    }
-    return internacao;
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findOne(id);
   }
 
-  // Exclui uma internação pelo ID
   @Public()
-  @Delete(':id')
-  async deleteInternacao(@Param('id', ParseIntPipe) id: number) {
-    return this.internacoesService.deleteInternacao(id);
+  @Post()
+  create(@Body(ValidationPipe) dto: CreateInternacaoDto) {
+    return this.service.create(dto);
   }
 
-  // Atualiza as informações de uma internação pelo ID
   @Public()
   @Patch(':id')
-  async updateInternacao(
+  update(
     @Param('id', ParseIntPipe) id: number,
-    @Body(ValidationPipe) data: UpdateInternacaoDto,
+    @Body(ValidationPipe) dto: UpdateInternacaoDto,
   ) {
-    return this.internacoesService.updateInternacao(id, data);
+    return this.service.update(id, dto);
+  }
+
+  @Public()
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.service.remove(id);
   }
 }
