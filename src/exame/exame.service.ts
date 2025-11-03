@@ -1,76 +1,115 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateExameDto } from './dto/create-exame-dto';
 import { UpdateExameDto } from './dto/update-exame-dto';
 
 @Injectable()
-export class ExamesService {
+export class ExameService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Cria um exame
   async create(data: CreateExameDto) {
-    const { consultaId, tipo, resultado } = data;
+    // checa existência da consulta (evita P2003)
+    const consulta = await this.prisma.consulta.findUnique({
+      where: { id: Number(data.consultaId) },
+      select: { id: true },
+    });
+    if (!consulta) {
+      throw new BadRequestException('Consulta inexistente para consultaId informado.');
+    }
 
-    return await this.prisma.exame.create({
+    return this.prisma.exame.create({
       data: {
-        consultaId,
-        tipo,
-        resultado,
+        consultaId: Number(data.consultaId),
+        tipo: data.tipo,
+        resultado: data.resultado ?? null,
+        dataHora: data.dataHora ? new Date(data.dataHora) : null,
       },
     });
   }
 
-  // Retorna todos os exames
   async findAll() {
-    return await this.prisma.exame.findMany({
+    return this.prisma.exame.findMany({
+      orderBy: { id: 'asc' },
       include: {
-        consulta: true,
+        consulta: {
+          select: {
+            id: true,
+            dataHora: true,
+            motivo: true,
+            paciente: { select: { id: true, nome: true } },
+            medico:   { select: { id: true, nome: true } },
+          },
+        },
       },
     });
   }
 
-  async findExame(id: number) {
+  async findOne(id: number) {
     const exame = await this.prisma.exame.findUnique({
       where: { id },
       include: {
-        consulta: true,
+        consulta: {
+          select: {
+            id: true,
+            dataHora: true,
+            motivo: true,
+            paciente: { select: { id: true, nome: true } },
+            medico:   { select: { id: true, nome: true } },
+          },
+        },
       },
     });
-
-    if (!exame) {
-      throw new NotFoundException(`Exame com ID ${id} não encontrado.`);
-    }
-
+    if (!exame) throw new NotFoundException(`Exame ${id} não encontrado.`);
     return exame;
   }
 
-  async deleteExame(id: number) {
-    const exame = await this.prisma.exame.findUnique({
-      where: { id },
-    });
-
-    if (!exame) {
-      throw new NotFoundException(`Exame com ID ${id} não encontrado.`);
+  async update(id: number, data: UpdateExameDto) {
+    // se mudar consultaId, valida
+    if (data.consultaId != null) {
+      const exists = await this.prisma.consulta.findUnique({
+        where: { id: Number(data.consultaId) },
+        select: { id: true },
+      });
+      if (!exists) throw new BadRequestException('Nova consultaId não existe.');
     }
 
-    return await this.prisma.exame.delete({
-      where: {
-        id,
+    return this.prisma.exame.update({
+      where: { id },
+      data: {
+        ...(data.tipo !== undefined ? { tipo: data.tipo } : {}),
+        ...(data.resultado !== undefined ? { resultado: data.resultado } : {}),
+        ...(data.consultaId !== undefined ? { consultaId: Number(data.consultaId) } : {}),
+        ...(data.dataHora !== undefined
+          ? { dataHora: data.dataHora ? new Date(data.dataHora) : null }
+          : {}),
+      },
+      include: {
+        consulta: {
+          select: {
+            id: true,
+            dataHora: true,
+            motivo: true,
+            paciente: { select: { id: true, nome: true } },
+            medico:   { select: { id: true, nome: true } },
+          },
+        },
       },
     });
   }
 
-  // Atualiza um exame
-  async updateExame(id: number, data: UpdateExameDto) {
-    const { ...updateData } = data;
+  async remove(id: number) {
+    // opcional: garantir 404 amigável
+    const found = await this.prisma.exame.findUnique({ where: { id } });
+    if (!found) throw new NotFoundException(`Exame ${id} não encontrado.`);
 
-    return await this.prisma.exame.update({
-      where: {
-        id,
-      },
-      data: {
-        ...updateData,
-      },
-    });
+    await this.prisma.exame.delete({ where: { id } });
+    return { ok: true };
+  }
+
+  /** contador rápido de pendentes = resultado null */
+  async countPendentes() {
+    const qtd = await this.prisma.exame.count({ where: { resultado: null } });
+    return { pendentes: qtd };
   }
 }

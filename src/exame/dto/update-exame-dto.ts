@@ -1,16 +1,20 @@
 /* eslint-disable prettier/prettier */
-import { IsOptional, IsString, IsInt } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsISO8601 } from 'class-validator';
 
 export class UpdateExameDto {
-    @IsOptional()
-    @IsInt()
-    consultaId?: bigint;
+  @IsOptional()
+  @IsInt()
+  consultaId?: number;
 
-    @IsString()
-    @IsOptional()
-    tipo?: string;
+  @IsOptional()
+  @IsString()
+  tipo?: string;
 
-    @IsString()
-    @IsOptional()
-    resultado?: string;
+  @IsOptional()
+  @IsString()
+  resultado?: string | null; // null para “pendente”
+
+  @IsOptional()
+  @IsISO8601()
+  dataHora?: string | null;
 }

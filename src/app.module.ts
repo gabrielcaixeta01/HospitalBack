@@ -9,6 +9,7 @@ import { EspecialidadesModule } from './especialidades/especialidades.module';
 import { ConsultasModule } from './consulta/consulta.module';
 import { InternacoesModule } from './internacao/internacao.module';
 import { LeitosModule } from './leito/leitos.module';
+import { ExameModule } from './exame/exame.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { LeitosModule } from './leito/leitos.module';
     MedicosModule,
     EspecialidadesModule,
     ConsultasModule,
+    ExameModule,
     InternacoesModule,
     LeitosModule,
   ],
