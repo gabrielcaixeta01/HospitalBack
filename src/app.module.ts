@@ -8,7 +8,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { EspecialidadesModule } from './especialidades/especialidades.module';
 import { ConsultasModule } from './consulta/consulta.module';
 import { InternacoesModule } from './internacao/internacao.module';
-import { LeitosModule } from './leito/leito.module';
+import { LeitosModule } from './leito/leitos.module';
 
 @Module({
   imports: [
