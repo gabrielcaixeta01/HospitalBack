@@ -1,20 +1,24 @@
 /* eslint-disable prettier/prettier */
-import { IsDate, IsNotEmpty, IsInt } from "class-validator";
-
+import { IsISO8601, IsInt, IsOptional, IsPositive, IsString, MaxLength } from 'class-validator';
 
 export class CreateConsultaDto {
-    @IsNotEmpty()
-    @IsInt()
-    pacienteId: number;
+  @IsISO8601({ strict: true }, { message: 'dataHora deve ser ISO 8601' })
+  dataHora!: string; // envie ISO ex.: 2025-11-03T13:30:00Z
 
-    @IsNotEmpty()
-    @IsInt()
-    medicoId: number;
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  motivo?: string;
 
-    @IsNotEmpty()
-    @IsDate()
-    dataHora: Date;
+  @IsOptional()
+  @IsString()
+  notas?: string;
 
-    @IsNotEmpty()
-    motivo: string;
+  @IsInt()
+  @IsPositive()
+  medicoId!: number;
+
+  @IsInt()
+  @IsPositive()
+  pacienteId!: number;
 }

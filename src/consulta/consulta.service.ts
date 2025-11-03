@@ -1,78 +1,107 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateConsultaDto } from './dto/create-consulta-dto';
 import { UpdateConsultaDto } from './dto/update-consulta-dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ConsultasService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Cria uma consulta
   async create(data: CreateConsultaDto) {
-    const { pacienteId, medicoId, dataHora, motivo } = data;
+    // validação leve de ISO
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(data.dataHora)) {
+      throw new BadRequestException('Envie dataHora em ISO UTC, ex: 2025-11-03T13:30:00Z');
+    }
 
-    return await this.prisma.consulta.create({
-      data: {
-        pacienteId,
-        medicoId,
-        dataHora,
-        motivo,
+    try {
+      return await this.prisma.consulta.create({
+        data: {
+          dataHora: new Date(data.dataHora),
+          motivo: data.motivo,
+          notas: data.notas,
+          medicoId: Number(data.medicoId),
+          pacienteId: Number(data.pacienteId),
+        },
+        include: {
+          medico: { select: { id: true, nome: true } },
+          paciente: { select: { id: true, nome: true } },
+        },
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2003') {
+        // FK inválida
+        throw new BadRequestException('medicoId ou pacienteId inválidos.');
+      }
+      throw err;
+    }
+  }
+
+  async findAll() {
+    return this.prisma.consulta.findMany({
+      orderBy: { dataHora: 'desc' },
+      include: {
+        medico: { select: { id: true, nome: true } },
+        paciente: { select: { id: true, nome: true } },
       },
     });
   }
 
-  async createConsulta(data: CreateConsultaDto) {
-    // backward-compatible alias for create
-    const { pacienteId, medicoId, dataHora, motivo } = data;
-    return await this.prisma.consulta.create({
-      data: { pacienteId, medicoId, dataHora, motivo },
-    });
-  }
-
-  // Retorna todas as consultas
-  async findAll() {
-    return await this.prisma.consulta.findMany({});
-  }
-
-  async findConsulta(id: number) {
+  async findOne(id: number) {
     const consulta = await this.prisma.consulta.findUnique({
-      where: { id },
+      where: { id: Number(id) },
+      include: {
+        medico: { select: { id: true, nome: true } },
+        paciente: { select: { id: true, nome: true } },
+      },
     });
-
-    if (!consulta) {
-      throw new NotFoundException(`Consulta com ID ${id} não encontrada.`);
-    }
-
+    if (!consulta) throw new NotFoundException(`Consulta ${id} não encontrada.`);
     return consulta;
   }
 
-  async deleteConsulta(id: number) {
-    const consulta = await this.prisma.consulta.findUnique({
-      where: { id },
-    });
-
-    if (!consulta) {
-      throw new NotFoundException(`Consulta com ID ${id} não encontrada.`);
+  async update(id: number, data: UpdateConsultaDto) {
+    // build payload incremental
+    const updateData: Prisma.ConsultaUpdateInput = {};
+    if (data.dataHora) {
+      if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(data.dataHora)) {
+        throw new BadRequestException('dataHora deve ser ISO UTC (ex.: ...Z)');
+      }
+      updateData.dataHora = new Date(data.dataHora);
     }
+    if (data.motivo !== undefined) updateData.motivo = data.motivo;
+    if (data.notas !== undefined) updateData.notas = data.notas;
+    if (data.medicoId !== undefined) updateData.medico = { connect: { id: Number(data.medicoId) } };
+    if (data.pacienteId !== undefined) updateData.paciente = { connect: { id: Number(data.pacienteId) } };
 
-    return await this.prisma.consulta.delete({
-      where: {
-        id,
-      },
-    });
+    try {
+      return await this.prisma.consulta.update({
+        where: { id: Number(id) },
+        data: updateData,
+        include: {
+          medico: { select: { id: true, nome: true } },
+          paciente: { select: { id: true, nome: true } },
+        },
+      });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+        throw new NotFoundException(`Consulta ${id} não encontrada.`);
+      }
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2003') {
+        throw new BadRequestException('medicoId ou pacienteId inválidos.');
+      }
+      throw err;
+    }
   }
 
-  // Atualiza uma consulta
-  async updateConsulta(id: number, data: UpdateConsultaDto) {
-    const { ...updateData } = data;
-
-    return await this.prisma.consulta.update({
-      where: {
-        id,
-      },
-      data: {
-        ...updateData,
-      },
-    });
+  async remove(id: number) {
+    try {
+      return await this.prisma.consulta.delete({ where: { id: Number(id) } });
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+        throw new NotFoundException(`Consulta ${id} não encontrada.`);
+      }
+      throw err;
+    }
   }
 }

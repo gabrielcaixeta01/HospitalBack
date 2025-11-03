@@ -1,23 +1,20 @@
 /* eslint-disable prettier/prettier */
-import { IsDate, IsOptional, IsInt } from "class-validator";
+import { PartialType } from '@nestjs/swagger';
+import { CreateConsultaDto } from './create-consulta-dto';
+import { IsInt, IsOptional, IsPositive, IsISO8601 } from 'class-validator';
 
+export class UpdateConsultaDto extends PartialType(CreateConsultaDto) {
+  @IsOptional()
+  @IsISO8601({ strict: true })
+  dataHora?: string;
 
-export class UpdateConsultaDto {
-    @IsOptional()
-    @IsInt()
-    pacienteId?: bigint;
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  medicoId?: number;
 
-    @IsOptional()
-    @IsInt()
-    medicoId?: bigint;
-
-    @IsOptional()
-    @IsDate()
-    dataHora?: Date;
-
-    @IsOptional()
-    status?: string;
-
-    @IsOptional()
-    motivo?: string;
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  pacienteId?: number;
 }
