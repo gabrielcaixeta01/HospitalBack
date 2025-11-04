@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Res,
+  ValidationPipe,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -6,10 +13,15 @@ import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { JwtPayload } from './decorators/current-user.decorator';
 import { AUTH_COOKIE_NAME } from './constants';
+import { UsersService } from 'src/user/user.service';
+import { CreateUserDto } from 'src/user/dto/create-user-dto';
 
-@Controller('api/v1/auth')
+@Controller('auth')
 export class AuthController {
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    private usersService: UsersService,
+  ) {}
 
   @Public()
   @Post('login')
@@ -41,5 +53,13 @@ export class AuthController {
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie(AUTH_COOKIE_NAME, { path: '/' });
     return { ok: true };
+  }
+
+  @Public()
+  @Post('register')
+  async register(@Body(ValidationPipe) dto: CreateUserDto) {
+    // delegate to UsersService which uses Prisma
+    // controller-level conversion: if profilepic is base64 string, keep it (UsersService normalizes)
+    return await this.usersService.create(dto);
   }
 }

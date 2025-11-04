@@ -4,10 +4,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
-import { UserService } from './user.service';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
+    UserModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'dev-secret',
       signOptions: {
@@ -21,7 +22,7 @@ import { UserService } from './user.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, UserService],
+  providers: [AuthService, JwtStrategy],
   exports: [JwtModule],
 })
 export class AuthModule {}

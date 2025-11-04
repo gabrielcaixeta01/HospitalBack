@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
 import type { Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -11,8 +12,14 @@ export class UsersService {
   // Cria um usuário
   async create(data: CreateUserDto) {
     const { nome, email, senha } = data;
+    // hash senha before persisting
+    const hashed = await bcrypt.hash(senha, 10);
 
-    const payload: Partial<Prisma.UserCreateInput> = { nome, email, senha };
+    const payload: Partial<Prisma.UserCreateInput> = {
+      nome,
+      email,
+      senha: hashed,
+    };
     // normalize profilepic to base64 string for Prisma (schema uses String)
     if (data.profilepic) {
       const pic = data.profilepic as unknown;
@@ -29,6 +36,11 @@ export class UsersService {
     return await this.prisma.user.create({
       data: payload as Prisma.UserCreateInput,
     });
+  }
+
+  // Verify password for a Prisma User record
+  async verifyPassword(user: { senha: string }, password: string) {
+    return bcrypt.compare(password, user.senha);
   }
 
   // Retorna todos os usuários
