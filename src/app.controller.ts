@@ -10,11 +10,7 @@ export class AppController {
 }
 
 @Module({
-  imports: [
-    AuthModule,
-    PacientesModule,
-    MedicosModule, // importa o módulo de médicos
-  ],
+  imports: [AuthModule, PacientesModule, MedicosModule],
   controllers: [AppController],
   providers: [AppService],
 })
