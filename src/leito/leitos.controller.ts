@@ -1,28 +1,50 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { LeitosService } from './leitos.service';
+import { CreateLeitoDto } from './dto/create-leito-dto';
+import { UpdateLeitoDto } from './dto/update-leito-dto';
 import { Public } from 'src/auth/decorators/isPublic.decorator';
 
 @Controller('leitos')
 export class LeitosController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly service: LeitosService) {}
+
+  @Public()
+  @Post()
+  create(@Body() dto: CreateLeitoDto) {
+    return this.service.create(dto);
+  }
 
   @Public()
   @Get()
   findAll() {
-    return this.prisma.leito.findMany({
-      orderBy: { id: 'asc' },
-      select: { id: true, codigo: true, status: true },
-    });
+    return this.service.findAll();
   }
 
   @Public()
-  @Post()
-  create(@Body() data: { codigo: string; status?: string }) {
-    const createData = {
-      codigo: data.codigo,
-      status: data.status ?? 'available',
-    };
-    return this.prisma.leito.create({ data: createData });
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findOne(id);
+  }
+
+  @Public()
+  @Patch(':id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateLeitoDto) {
+    return this.service.update(id, dto);
+  }
+
+  @Public()
+  @Patch(':id/status')
+  updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('status') status: 'livre'|'ocupado'|'manutencao',
+  ) {
+    return this.service.updateStatus(id, status);
+  }
+
+  @Public()
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.service.remove(id);
   }
 }

@@ -1,16 +1,13 @@
 /* eslint-disable prettier/prettier */
-import { IsBoolean, IsOptional, IsString } from "class-validator";
+import { IsIn, IsOptional, IsString } from 'class-validator';
 
-export class CreateLeitoDto {
-    @IsString()
-    @IsOptional()
-    ala?: string;
+export class UpdateLeitoDto {
+  @IsString()
+  @IsOptional()
+  codigo?: string;
 
-    @IsOptional()
-    @IsString()
-    numeroLeito?: string;
-
-    @IsOptional()
-    @IsBoolean()
-    ocupado?: boolean;
+  @IsString()
+  @IsOptional()
+  @IsIn(['livre', 'ocupado', 'manutencao'])
+  status?: 'livre' | 'ocupado' | 'manutencao';
 }

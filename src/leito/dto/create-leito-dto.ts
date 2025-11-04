@@ -1,16 +1,13 @@
 /* eslint-disable prettier/prettier */
-import { IsBoolean, IsNotEmpty, IsString } from "class-validator";
+import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateLeitoDto {
-    @IsString()
-    @IsNotEmpty()
-    ala: string;
-    
-    @IsNotEmpty()
-    @IsString()
-    numeroLeito: string;
+  @IsString()
+  @IsNotEmpty()
+  codigo!: string; // ex.: "A-201"
 
-    @IsNotEmpty()
-    @IsBoolean()
-    ocupado: boolean;
+  @IsString()
+  @IsOptional()
+  @IsIn(['livre', 'ocupado', 'manutencao'])
+  status?: 'livre' | 'ocupado' | 'manutencao';
 }
