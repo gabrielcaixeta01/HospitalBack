@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PacientesModule } from './paciente/paciente.module';
 import { MedicosModule } from './medico/medico.module';
@@ -26,6 +27,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
   ],
   controllers: [AppController],
   providers: [
+    AppService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

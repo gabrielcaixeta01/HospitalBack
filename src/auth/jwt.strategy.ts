@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy } from 'passport-jwt';
 import type { Request } from 'express';
 import { AUTH_COOKIE_NAME } from './constants';
 
@@ -14,10 +15,18 @@ function fromAuthCookie(req: Request) {
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        fromAuthCookie,
-        ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ]),
+      jwtFromRequest: (req: Request) => {
+        const tokenFromCookie = fromAuthCookie(req);
+        if (tokenFromCookie) return tokenFromCookie;
+        const authHeader = req?.headers?.authorization;
+        if (
+          typeof authHeader === 'string' &&
+          authHeader.startsWith('Bearer ')
+        ) {
+          return authHeader.slice(7);
+        }
+        return null;
+      },
       secretOrKey: process.env.JWT_SECRET || 'dev-secret',
       ignoreExpiration: false,
     });
