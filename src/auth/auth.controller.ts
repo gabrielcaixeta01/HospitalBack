@@ -15,6 +15,7 @@ import type { JwtPayload } from './decorators/current-user.decorator';
 import { AUTH_COOKIE_NAME } from './constants';
 import { UsersService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/create-user-dto';
+// Prisma types are used elsewhere; no import needed here
 
 @Controller('auth')
 export class AuthController {
@@ -57,9 +58,37 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  async register(@Body(ValidationPipe) dto: CreateUserDto) {
-    // delegate to UsersService which uses Prisma
-    // controller-level conversion: if profilepic is base64 string, keep it (UsersService normalizes)
-    return await this.usersService.create(dto);
+  async register(
+    @Body(ValidationPipe) dto: CreateUserDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // Create the user (UsersService hashes the password)
+    const user = await this.usersService.create(dto);
+
+    // Sign JWT (auto-login)
+    const token = this.auth.signToken(user);
+
+    // set cookie on root path to mirror login behavior
+    res.cookie(AUTH_COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    // Build a safe user object without the senha field to return to the client
+    const safeUser = {
+      id: user.id,
+      nome: user.nome,
+      email: user.email,
+      profilepic: user.profilepic ?? null,
+      criadoEm: user.criadoEm,
+    };
+
+    return {
+      access_token: token,
+      user: safeUser,
+    };
   }
 }
