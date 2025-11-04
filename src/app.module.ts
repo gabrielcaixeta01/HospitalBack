@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PacientesModule } from './paciente/paciente.module';
 import { MedicosModule } from './medico/medico.module';
@@ -10,6 +9,8 @@ import { ConsultasModule } from './consulta/consulta.module';
 import { InternacoesModule } from './internacao/internacao.module';
 import { LeitosModule } from './leito/leitos.module';
 import { ExameModule } from './exame/exame.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -24,6 +25,11 @@ import { ExameModule } from './exame/exame.module';
     LeitosModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

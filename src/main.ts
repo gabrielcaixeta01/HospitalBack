@@ -1,38 +1,55 @@
+// src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule, OpenAPIObject } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import type { Request, Response, Express } from 'express';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // --- BigInt JSON fix: serializa BigInt como string ---
-  (
-    BigInt.prototype as unknown as { toJSON?: (this: bigint) => string }
-  ).toJSON = function (this: bigint) {
-    return this.toString();
-  };
+  Object.defineProperty(BigInt.prototype, 'toJSON', {
+    value: function (this: bigint) {
+      return this.toString();
+    },
+    configurable: true,
+    writable: true,
+  });
 
-  // CORS: allow frontend dev origin by default, enable credentials for cookie-based auth
+  // Se estiver atrás de proxy (Vercel/NGINX/Render), ative para cookies "secure"
+  const expressApp = app.getHttpAdapter().getInstance() as Express;
+  expressApp.enable('trust proxy');
+
+  // Prefixo de API (defina antes do Swagger para manter rotas sob /api/v1/*)
+  app.setGlobalPrefix('api/v1');
+
+  // Cookies (necessário para JWT em cookie httpOnly)
+  app.use(cookieParser());
+
+  // CORS (credenciais habilitadas para enviar cookies)
   const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
-  app.enableCors({ origin: frontendOrigin, credentials: true });
+  app.enableCors({
+    origin: frontendOrigin,
+    credentials: true,
+  });
 
-  // Global validation pipe: whitelist unknown properties and transform payloads to DTO instances
+  // Validação global
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
-      transformOptions: { enableImplicitConversion: true }, // útil p/ datas e números
+      transformOptions: { enableImplicitConversion: true },
     }),
   );
 
-  // OpenAPI / Swagger
+  // Swagger (Bearer no header; se quiser, depois adicionamos cookie auth também)
   const config = new DocumentBuilder()
     .setTitle('Hospital API')
     .setDescription('API do sistema hospitalar')
     .setVersion('1.0')
-    .addBearerAuth()
+    .addBearerAuth() // Authorization: Bearer <token>
     .build();
 
   const document: OpenAPIObject = SwaggerModule.createDocument(app, config);
@@ -40,9 +57,6 @@ async function bootstrap() {
   app.use('/api/v1/docs-json', (_req: Request, res: Response) =>
     res.json(document),
   );
-
-  // API prefix (versioning via prefix)
-  app.setGlobalPrefix('api/v1');
 
   const port = Number(process.env.PORT) || 4000;
   await app.listen(port);

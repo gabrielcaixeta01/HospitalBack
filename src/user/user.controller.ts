@@ -17,7 +17,7 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
-import { Public } from 'src/auth/decorators/isPublic.decorator';
+import { Public } from 'src/auth/decorators/public.decorator';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import type { UserPayload } from 'src/auth/types/UserPayload';
 

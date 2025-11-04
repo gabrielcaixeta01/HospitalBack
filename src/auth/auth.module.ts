@@ -1,24 +1,27 @@
-// src/auth/auth.module.ts
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { AuthService } from './auth.service';
-import { UsersService } from './user.service';
-import { JwtStrategy } from './jwt.strategy';
 import { AuthController } from './auth.controller';
-import { jwtConstants } from './constants';
+import { AuthService } from './auth.service';
+import { JwtStrategy } from './jwt.strategy';
+import { UserService } from './user.service';
 
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
-      secret: jwtConstants.secret,
-      // jwtConstants.expiresIn usually comes from env and is a string like '1h'
-      signOptions: { expiresIn: jwtConstants.expiresIn },
+      secret: process.env.JWT_SECRET || 'dev-secret',
+      signOptions: {
+        expiresIn: (() => {
+          const v = process.env.JWT_EXPIRES_IN;
+          if (!v) return '7d';
+          const n = Number(v);
+          return Number.isNaN(n) ? v : n;
+        })() as any,
+      },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, JwtStrategy],
-  exports: [AuthService, UsersService],
+  providers: [AuthService, JwtStrategy, UserService],
+  exports: [JwtModule],
 })
 export class AuthModule {}

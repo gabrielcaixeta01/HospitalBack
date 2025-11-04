@@ -2,24 +2,29 @@ import { Injectable } from '@nestjs/common';
 
 export type User = {
   id: number;
-  username: string;
-  password: string; // plain-text for skeleton only
-  roles?: string[];
+  email: string;
+  passwordHash: string;
+  role?: string;
 };
 
 @Injectable()
-export class UsersService {
-  private readonly users: User[] = [
+export class UserService {
+  // fake user (troque por busca no banco via Prisma)
+  private users: User[] = [
     {
       id: 1,
-      username: process.env.AUTH_USER || 'admin',
-      password: process.env.AUTH_PASS || 'password',
-      roles: ['admin'],
+      email: 'admin@hospital.local',
+      passwordHash: 'admin',
+      role: 'admin',
     },
   ];
 
-  findOneByUsername(username: string): Promise<User | undefined> {
-    const user = this.users.find((u) => u.username === username);
-    return Promise.resolve(user);
+  findByEmail(email: string): Promise<User | undefined> {
+    return Promise.resolve(this.users.find((u) => u.email === email));
+  }
+
+  verifyPassword(user: User, password: string): Promise<boolean> {
+    // substitua por bcrypt.compare
+    return Promise.resolve(user.passwordHash === password);
   }
 }

@@ -1,33 +1,24 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService, User } from './user.service';
+import { UserService, User } from './user.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
-    private readonly jwtService: JwtService,
+    private users: UserService,
+    private jwt: JwtService,
   ) {}
 
-  async validateUser(
-    username: string,
-    pass: string,
-  ): Promise<Partial<User> | null> {
-    const user = await this.usersService.findOneByUsername(username);
-    if (user && user.password === pass) {
-      const { password, ...rest } = user;
-      return rest;
+  async validateUser(email: string, password: string): Promise<User> {
+    const user = await this.users.findByEmail(email);
+    if (!user || !(await this.users.verifyPassword(user, password))) {
+      throw new UnauthorizedException('Credenciais inválidas');
     }
-    return null;
+    return user;
   }
 
-  async login(user: Partial<User>) {
-    if (!user) throw new UnauthorizedException();
-    const payload = {
-      username: user.username,
-      sub: user.id,
-      roles: user.roles || [],
-    };
-    return { accessToken: this.jwtService.sign(payload) };
+  signToken(user: User) {
+    const payload = { sub: user.id, email: user.email, role: user.role };
+    return this.jwt.sign(payload);
   }
 }

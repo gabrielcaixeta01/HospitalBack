@@ -3,7 +3,7 @@ import {
   Body, Controller, Get, Post, Patch, Delete,
   Param, ParseIntPipe, ValidationPipe,
 } from '@nestjs/common';
-import { Public } from 'src/auth/decorators/isPublic.decorator';
+import { Public } from 'src/auth/decorators/public.decorator';
 import { InternacoesService } from './internacao.service';
 import { CreateInternacaoDto } from './dto/create-internacao-dto';
 import { UpdateInternacaoDto } from './dto/update-internacao-dto';

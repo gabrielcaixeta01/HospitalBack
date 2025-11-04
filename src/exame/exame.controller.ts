@@ -13,7 +13,7 @@ import {
 import { ExameService } from './exame.service';
 import { CreateExameDto } from './dto/create-exame-dto';
 import { UpdateExameDto } from './dto/update-exame-dto';
-import { Public } from 'src/auth/decorators/isPublic.decorator';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('exames')
 export class ExameController {

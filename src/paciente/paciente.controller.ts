@@ -1,4 +1,4 @@
-import { Public } from 'src/auth/decorators/isPublic.decorator';
+import { Public } from 'src/auth/decorators/public.decorator';
 import { CreatePacienteDto } from './dto/create-paciente-dto';
 import { UpdatePacienteDto } from './dto/update-paciente-dto';
 import { PacientesService } from './paciente.service';

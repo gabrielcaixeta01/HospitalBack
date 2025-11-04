@@ -3,7 +3,7 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from 
 import { LeitosService } from './leitos.service';
 import { CreateLeitoDto } from './dto/create-leito-dto';
 import { UpdateLeitoDto } from './dto/update-leito-dto';
-import { Public } from 'src/auth/decorators/isPublic.decorator';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('leitos')
 export class LeitosController {

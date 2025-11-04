@@ -1,23 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { jwtConstants } from './constants';
+import type { Request } from 'express';
+import { AUTH_COOKIE_NAME } from './constants';
+
+function fromAuthCookie(req: Request) {
+  const anyReq = req as unknown as { cookies?: Record<string, unknown> };
+  const raw = anyReq?.cookies?.[AUTH_COOKIE_NAME];
+  return typeof raw === 'string' ? raw : null;
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        fromAuthCookie,
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
+      secretOrKey: process.env.JWT_SECRET || 'dev-secret',
       ignoreExpiration: false,
-      secretOrKey: jwtConstants.secret,
     });
   }
 
-  async validate(payload: any) {
-    return {
-      userId: payload.sub,
-      username: payload.username,
-      roles: payload.roles,
-    };
+  // payload: o que foi assinado no token
+  validate(payload: { sub: number; email: string; role?: string }) {
+    return payload;
   }
 }
