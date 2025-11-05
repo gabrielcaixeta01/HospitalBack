@@ -5,6 +5,7 @@ import {
   Post,
   Res,
   ValidationPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -30,7 +31,13 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const user = await this.auth.validateUser(dto.email, dto.password);
+    const maybe = dto as unknown as { senha?: string; password?: string };
+    const rawPassword = maybe.password ?? maybe.senha;
+    if (!rawPassword) {
+      throw new BadRequestException('Password is required');
+    }
+
+    const user = await this.auth.validateUser(dto.email, rawPassword);
     const token = this.auth.signToken(user);
 
     // cookie httpOnly (front lê via requisição / profile)

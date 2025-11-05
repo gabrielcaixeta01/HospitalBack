@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
@@ -11,9 +11,15 @@ export class UsersService {
 
   // Cria um usuário
   async create(data: CreateUserDto) {
-    const { nome, email, senha } = data;
+    const { nome, email } = data;
+    // Accept either `senha` (Portuguese) or `password` (English) from different frontends
+    const maybe = data as unknown as { senha?: string; password?: string };
+    const rawPassword = maybe.senha ?? maybe.password;
+    if (!rawPassword || typeof rawPassword !== 'string') {
+      throw new BadRequestException('Password (senha) is required');
+    }
     // hash senha before persisting
-    const hashed = await bcrypt.hash(senha, 10);
+    const hashed = await bcrypt.hash(rawPassword, 10);
 
     const payload: Partial<Prisma.UserCreateInput> = {
       nome,

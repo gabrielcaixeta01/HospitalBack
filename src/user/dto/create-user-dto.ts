@@ -16,6 +16,8 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'O e-mail é obrigatório.' })
   email: string;
 
+  // support both Portuguese `senha` and English `password` coming from different frontends
+  @IsOptional()
   @IsString({ message: 'A senha deve ser uma string.' })
   @MinLength(8, { message: 'A senha deve ter pelo menos 8 caracteres.' })
   @Matches(/(?=.*[a-z])/, {
@@ -28,7 +30,22 @@ export class CreateUserDto {
   @Matches(/(?=.*[@$!%*?&])/, {
     message: 'A senha deve conter pelo menos um caractere especial.',
   })
-  senha: string;
+  senha?: string;
+
+  @IsOptional()
+  @IsString({ message: 'A senha deve ser uma string.' })
+  @MinLength(8, { message: 'A senha deve ter pelo menos 8 caracteres.' })
+  @Matches(/(?=.*[a-z])/, {
+    message: 'A senha deve conter pelo menos uma letra minúscula.',
+  })
+  @Matches(/(?=.*[A-Z])/, {
+    message: 'A senha deve conter pelo menos uma letra maiúscula.',
+  })
+  @Matches(/(?=.*\d)/, { message: 'A senha deve conter pelo menos um número.' })
+  @Matches(/(?=.*[@$!%*?&])/, {
+    message: 'A senha deve conter pelo menos um caractere especial.',
+  })
+  password?: string;
 
   // Base64 string (optional) - controller accepts base64 and converts to Buffer
   @IsOptional()
