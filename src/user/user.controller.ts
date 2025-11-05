@@ -31,6 +31,7 @@ export class UserController {
   @Public()
   @Post()
   async create(@Body(ValidationPipe) userData: CreateUserDto) {
+    // Se profilepic vier como base64 string, converte para Buffer
     if (typeof userData.profilepic === 'string') {
       userData.profilepic = Buffer.from(userData.profilepic, 'base64');
     }
@@ -52,8 +53,12 @@ export class UserController {
         throw new NotFoundException(`Usuário com ID ${id} não encontrado`);
       }
       return user;
-    } catch (error) {
-      throw new NotFoundException(`Erro ao buscar o usuário: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new HttpException(
+        `Erro ao buscar o usuário: ${message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -61,16 +66,18 @@ export class UserController {
   @Get('email/:email')
   async findUserByEmail(@Param('email') email: string) {
     try {
-      const user = await this.userService.findUserByEmail(email);
+      // Use the public variant to avoid returning the senha (password hash)
+      const user = await this.userService.findPublicByEmail(email);
       if (!user) {
         throw new NotFoundException(
           `Usuário com email ${email} não encontrado`,
         );
       }
       return user;
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       throw new HttpException(
-        `Erro ao buscar o usuário por email: ${error.message}`,
+        `Erro ao buscar o usuário por email: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -88,14 +95,15 @@ export class UserController {
       }
       if (id !== currentUser.sub) {
         throw new UnauthorizedException(
-          'Você só pode deletar suas própria conta.',
+          'Você só pode deletar sua própria conta.',
         );
       }
       await this.userService.deleteUser(id);
-      return { message: `Usuário com ID ${id} excluído com sucesso` };
-    } catch (error) {
+      return { message: 'Usuário deletado com sucesso' };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       throw new HttpException(
-        `Erro ao excluir o usuário: ${error.message}`,
+        `Erro ao excluir o usuário: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -108,23 +116,22 @@ export class UserController {
     @CurrentUser() currentUser: UserPayload,
   ) {
     try {
-      // Se profilepic for string base64, converte
+      // Verifica permissão
       if (id !== currentUser.sub) {
         throw new UnauthorizedException(
-          'Você só pode editar suas própria conta.',
+          'Você só pode editar sua própria conta.',
         );
       }
+      // Se profilepic for base64 string, converte para Buffer
       if (typeof data.profilepic === 'string') {
         data.profilepic = Buffer.from(data.profilepic, 'base64');
       }
-
-      // Atualiza o usuário diretamente no serviço
-      const updatedUser = await this.userService.updateUser(id, data);
-
-      return updatedUser;
-    } catch (error) {
+      const updated = await this.userService.updateUser(id, data);
+      return updated;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       throw new HttpException(
-        `Erro ao atualizar o usuário: ${error.message}`,
+        `Erro ao atualizar o usuário: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

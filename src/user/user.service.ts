@@ -13,6 +13,15 @@ import * as bcrypt from 'bcrypt';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Fields returned to clients (exclude senha)
+  private readonly publicSelect = {
+    id: true,
+    nome: true,
+    email: true,
+    profilepic: true,
+    criadoEm: true,
+  } as const;
+
   // Cria um usuário
   async create(data: CreateUserDto) {
     const { nome, email } = data;
@@ -43,8 +52,10 @@ export class UsersService {
       }
     }
 
+    // create and return a public view (exclude senha)
     return await this.prisma.user.create({
       data: payload as Prisma.UserCreateInput,
+      select: this.publicSelect,
     });
   }
 
@@ -55,11 +66,14 @@ export class UsersService {
 
   // Retorna todos os usuários
   async findAll() {
-    return await this.prisma.user.findMany();
+    return await this.prisma.user.findMany({ select: this.publicSelect });
   }
+
+  // find a single user for public consumption (no senha)
   async findUser(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id },
+      select: this.publicSelect,
     });
 
     if (!user) {
@@ -74,8 +88,17 @@ export class UsersService {
     return this.findUser(id);
   }
 
+  // This method is used by AuthService and must include the senha for password verification.
   async findUserByEmail(email: string) {
     return await this.prisma.user.findUnique({ where: { email } });
+  }
+
+  // Public variant that excludes senha
+  async findPublicByEmail(email: string) {
+    return await this.prisma.user.findUnique({
+      where: { email },
+      select: this.publicSelect,
+    });
   }
 
   async deleteUser(id: number) {
@@ -85,10 +108,10 @@ export class UsersService {
       throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
     }
 
+    // delete and return public view
     return await this.prisma.user.delete({
-      where: {
-        id,
-      },
+      where: { id },
+      select: this.publicSelect,
     });
   }
 
@@ -111,10 +134,9 @@ export class UsersService {
     }
 
     return await this.prisma.user.update({
-      where: {
-        id,
-      },
+      where: { id },
       data: updateData as Prisma.UserUpdateInput,
+      select: this.publicSelect,
     });
   }
 }

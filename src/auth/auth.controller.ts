@@ -57,6 +57,12 @@ export class AuthController {
     return user;
   }
 
+  @Get('me')
+  me(@CurrentUser() user: JwtPayload) {
+    // alias for /profile used by some frontends
+    return this.profile(user);
+  }
+
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie(AUTH_COOKIE_NAME, { path: '/' });
