@@ -16,7 +16,6 @@ import type { JwtPayload } from './decorators/current-user.decorator';
 import { AUTH_COOKIE_NAME } from './constants';
 import { UsersService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/create-user-dto';
-// Prisma types are used elsewhere; no import needed here
 
 @Controller('auth')
 export class AuthController {
@@ -37,14 +36,27 @@ export class AuthController {
       throw new BadRequestException('Password is required');
     }
 
-    const user = await this.auth.validateUser(dto.email, rawPassword);
-    const token = this.auth.signToken(user);
+    const emailVal = (dto as unknown as { email?: unknown }).email;
+    if (typeof emailVal !== 'string' || emailVal.trim() === '') {
+      throw new BadRequestException('Email is required');
+    }
 
-    // cookie httpOnly (front lê via requisição / profile)
+    type AuthenticatedUser = {
+      id: number | bigint;
+      email: string;
+      nome?: string;
+      criadoEm?: Date;
+    };
+    const user = (await this.auth.validateUser(
+      emailVal,
+      rawPassword,
+    )) as unknown as AuthenticatedUser;
+    const token = this.auth.signToken({ id: user.id, email: user.email });
+
     res.cookie(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: false, // true em produção c/ HTTPS
+      secure: false,
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -59,7 +71,6 @@ export class AuthController {
 
   @Get('me')
   me(@CurrentUser() user: JwtPayload) {
-    // alias for /profile used by some frontends
     return this.profile(user);
   }
 
@@ -75,13 +86,10 @@ export class AuthController {
     @Body(ValidationPipe) dto: CreateUserDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    // Create the user (UsersService hashes the password)
     const user = await this.usersService.create(dto);
 
-    // Sign JWT (auto-login)
-    const token = this.auth.signToken(user);
+    const token = this.auth.signToken({ id: user.id, email: user.email });
 
-    // set cookie on root path to mirror login behavior
     res.cookie(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
       sameSite: 'lax',
@@ -90,12 +98,10 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    // Build a safe user object without the senha field to return to the client
     const safeUser = {
       id: user.id,
       nome: user.nome,
       email: user.email,
-      profilepic: user.profilepic ?? null,
       criadoEm: user.criadoEm,
     };
 

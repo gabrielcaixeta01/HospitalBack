@@ -47,8 +47,5 @@ export class CreateUserDto {
   })
   password?: string;
 
-  // Base64 string (optional) - controller accepts base64 and converts to Buffer
-  @IsOptional()
-  @IsString()
-  profilepic?: string | Buffer;
+  // profilepic removed from schema
 }

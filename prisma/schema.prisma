@@ -151,7 +151,6 @@ model User {
   nome       String   @db.VarChar(120)
   email      String   @unique @db.VarChar(120)
   senha      String   @db.VarChar(255)
-  profilepic String?  @db.Text
   criadoEm   DateTime @default(now())
 
   @@map("usuario")

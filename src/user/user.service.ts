@@ -18,7 +18,6 @@ export class UsersService {
     id: true,
     nome: true,
     email: true,
-    profilepic: true,
     criadoEm: true,
   } as const;
 
@@ -39,18 +38,7 @@ export class UsersService {
       email,
       senha: hashed,
     };
-    // normalize profilepic to base64 string for Prisma (schema uses String)
-    if (data.profilepic) {
-      const pic = data.profilepic as unknown;
-      if (typeof pic === 'string') {
-        // assume already base64 or url
-        payload.profilepic = pic;
-      } else if (Buffer.isBuffer(pic)) {
-        payload.profilepic = pic.toString('base64');
-      } else if (pic instanceof Uint8Array) {
-        payload.profilepic = Buffer.from(pic).toString('base64');
-      }
-    }
+    // profilepic removed from schema; no normalization needed
 
     // create and return a public view (exclude senha)
     return await this.prisma.user.create({
@@ -117,21 +105,7 @@ export class UsersService {
 
   // Atualiza um usuário
   async updateUser(id: number, data: UpdateUserDto) {
-    const updateData: Partial<
-      UpdateUserDto & { profilepic?: string | Buffer | Uint8Array }
-    > = { ...data };
-
-    // normalize profilepic to base64 string if present
-    if (updateData.profilepic) {
-      const pic = updateData.profilepic as unknown;
-      if (typeof pic === 'string') {
-        updateData.profilepic = pic;
-      } else if (Buffer.isBuffer(pic)) {
-        updateData.profilepic = pic.toString('base64');
-      } else if (pic instanceof Uint8Array) {
-        updateData.profilepic = Buffer.from(pic).toString('base64');
-      }
-    }
+    const updateData: Partial<UpdateUserDto> = { ...data };
 
     return await this.prisma.user.update({
       where: { id },

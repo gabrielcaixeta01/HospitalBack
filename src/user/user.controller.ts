@@ -1,4 +1,3 @@
-import { UsersService } from './user.service';
 import {
   Controller,
   Get,
@@ -14,7 +13,7 @@ import {
   HttpStatus,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { UsersService } from './user.service';
 import { CreateUserDto } from './dto/create-user-dto';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { Public } from 'src/auth/decorators/public.decorator';
@@ -23,18 +22,12 @@ import type { UserPayload } from 'src/auth/types/UserPayload';
 
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: UsersService,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly userService: UsersService) {}
 
   @Public()
   @Post()
   async create(@Body(ValidationPipe) userData: CreateUserDto) {
-    // Se profilepic vier como base64 string, converte para Buffer
-    if (typeof userData.profilepic === 'string') {
-      userData.profilepic = Buffer.from(userData.profilepic, 'base64');
-    }
+    // profilepic was removed from schema; ignore any such field
     return await this.userService.create(userData);
   }
 
@@ -122,10 +115,7 @@ export class UserController {
           'Você só pode editar sua própria conta.',
         );
       }
-      // Se profilepic for base64 string, converte para Buffer
-      if (typeof data.profilepic === 'string') {
-        data.profilepic = Buffer.from(data.profilepic, 'base64');
-      }
+      // profilepic removed from schema; ignore profilepic in payload if present
       const updated = await this.userService.updateUser(id, data);
       return updated;
     } catch (error: unknown) {
