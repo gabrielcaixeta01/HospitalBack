@@ -1,40 +1,55 @@
-# Postgres + Prisma — Local setup notes
+# Postgres + Prisma — Local setup notes (non‑Docker)
 
-These are minimal notes to get Prisma working with the Docker Postgres in this repository.
+These notes explain how to run the project's database and Prisma locally without Docker (macOS / zsh).
 
-1. Start Docker Compose (container `hospital_db` and `hospital_pgadmin`):
-
-```bash
-docker compose up -d
-```
-
-2. The project expects a `DATABASE_URL` environment variable. Example value used in this repo:
-
-```text
-DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/hospital_db?schema=public"
-```
-
-Use `127.0.0.1` on macOS to avoid IPv6/`localhost` resolution conflicts.
-
-3. Generate Prisma client and push schema:
+1) Install and start Postgres (Homebrew)
 
 ```bash
-npx prisma generate --schema prisma/schema.prisma
-npx prisma db push --schema prisma/schema.prisma
+brew install postgresql
+brew services start postgresql
 ```
 
-4. If you have Homebrew Postgres running on port 5432, stop it before starting the container:
+2) Create database and ensure credentials match `.env` (this project uses `postgres:postgres` in `.env`)
 
 ```bash
-brew services stop postgresql@14
-# (when done) brew services start postgresql@14
+# create DB (adjust name if you prefer 'hospital_db' instead of 'hospital')
+psql -d postgres -c "CREATE DATABASE hospital OWNER postgres;"
+
+# if user already exists, ensure its password matches the .env value
+psql -d postgres -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 ```
 
-5. CI / production: set `DATABASE_URL` via environment variables instead of `.env` files.
+3) Ensure `.env` contains the right `DATABASE_URL` (example):
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/hospital?schema=public"
+```
+
+4) Generate Prisma client and apply the schema
+
+If you want to apply existing migrations (recommended for CI/production):
+
+```bash
+npx prisma generate --schema=prisma/schema.prisma
+npx prisma migrate deploy --schema=prisma/schema.prisma
+```
+
+For a fast development sync (non-destructive in dev flow):
+
+```bash
+npx prisma generate --schema=prisma/schema.prisma
+npx prisma db push --schema=prisma/schema.prisma
+```
+
+5) Start the Nest app
+
+```bash
+npm run start
+```
 
 Notes
+- Use `127.0.0.1` in the URL to avoid potential IPv6/`localhost` resolution issues on macOS.
+- If you change the database name, create it or update the `DATABASE_URL` accordingly.
+- CI / production: set `DATABASE_URL` via environment variables rather than `.env` files.
 
-- `prisma/.env` exists and is used by Prisma when loading the `prisma.config.ts` file. We added `import 'dotenv/config'` at the top of `prisma.config.ts` so `.env` values are available when Prisma loads its config.
-- If you change the DB name, ensure the database actually exists in the Postgres instance (or create it with `CREATE DATABASE <name>;`).
-
-That's it — these steps reproduce the quick workflow used during local development.
+If you want, I can also create a small setup script that automates steps 1–4 on macOS.
