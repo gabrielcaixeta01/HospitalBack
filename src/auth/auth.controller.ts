@@ -65,12 +65,13 @@ export class AuthController {
   }
 
   @Get('profile')
-  profile(@CurrentUser() user: JwtPayload) {
-    return user;
+  async profile(@CurrentUser() user: JwtPayload) {
+    // Return the public user record (id, nome, email, criadoEm)
+    return await this.usersService.findUserById(Number(user.sub));
   }
 
   @Get('me')
-  me(@CurrentUser() user: JwtPayload) {
+  async me(@CurrentUser() user: JwtPayload) {
     return this.profile(user);
   }
 
