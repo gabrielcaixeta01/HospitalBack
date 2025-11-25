@@ -158,7 +158,12 @@ export class InternacoesService {
     }
 
     // Atualiza a internação
-    const updateData: any = {};
+    const updateData: {
+      pacienteId?: bigint;
+      leitoId?: bigint;
+      dataEntrada?: Date;
+      dataAlta?: Date | null;
+    } = {};
     if (data.pacienteId !== undefined)
       updateData.pacienteId = BigInt(data.pacienteId);
     if (data.leitoId !== undefined) updateData.leitoId = BigInt(data.leitoId);
