@@ -8,6 +8,8 @@ export class UpdateLeitoDto {
 
   @IsString()
   @IsOptional()
-  @IsIn(['livre', 'ocupado', 'manutencao'])
-  status?: 'livre' | 'ocupado' | 'manutencao';
+  @IsIn(['livre', 'manutencao'], {
+    message: 'status só pode ser "livre" ou "manutencao". Status "ocupado" é controlado por internações.',
+  })
+  status?: 'livre' | 'manutencao';
 }

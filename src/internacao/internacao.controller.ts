@@ -27,7 +27,7 @@ export class InternacoesController {
   @Public()
   @Post()
   create(@Body(ValidationPipe) dto: CreateInternacaoDto) {
-    return this.service.create(dto);
+    return this.service.create({ ...dto, dataEntrada: new Date(dto.dataEntrada) });
   }
 
   @Public()

@@ -9,7 +9,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { EspecialidadesModule } from './especialidades/especialidades.module';
 import { ConsultasModule } from './consulta/consulta.module';
 import { InternacoesModule } from './internacao/internacao.module';
-import { LeitosModule } from './leito/leitos.module';
+import { LeitosModule } from './leito/leito.module';
 import { ExameModule } from './exame/exame.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
