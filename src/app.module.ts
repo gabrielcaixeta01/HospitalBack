@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PacientesModule } from './paciente/paciente.module';
 import { MedicosModule } from './medico/medico.module';
@@ -27,9 +25,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
     InternacoesModule,
     LeitosModule,
   ],
-  controllers: [AppController],
   providers: [
-    AppService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

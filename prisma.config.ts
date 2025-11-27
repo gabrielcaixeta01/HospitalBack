@@ -11,5 +11,3 @@ export default defineConfig({
     url: env('DATABASE_URL'),
   },
 });
-
-// (no debug logging in config)
