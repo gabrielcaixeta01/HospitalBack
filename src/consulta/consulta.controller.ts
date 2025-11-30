@@ -3,9 +3,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from 
 import { ConsultasService } from './consulta.service';
 import { CreateConsultaDto } from './dto/create-consulta-dto';
 import { UpdateConsultaDto } from './dto/update-consulta-dto';
-import { Public } from 'src/auth/decorators/public.decorator';
 
-@Public()
 @Controller('consultas')
 export class ConsultasController {
   constructor(private readonly consultasService: ConsultasService) {}

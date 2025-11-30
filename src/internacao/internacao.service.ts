@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   BadRequestException,
   Injectable,
@@ -9,9 +10,6 @@ import { PrismaService } from '../prisma/prisma.service';
 export class InternacoesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // ---------------------------------------------------------------------------
-  // LISTAR TODAS COM PACIENTE + LEITO
-  // ---------------------------------------------------------------------------
   async findAll() {
     return this.prisma.internacao.findMany({
       include: {
@@ -22,15 +20,11 @@ export class InternacoesService {
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // CRIAR INTERNAÇÃO
-  // ---------------------------------------------------------------------------
   async create(data: {
     pacienteId: bigint | number;
     leitoId: bigint | number;
     dataEntrada: Date;
   }) {
-    // Verifica se o paciente já está internado
     const pacienteJaInternado = await this.prisma.internacao.findFirst({
       where: { pacienteId: BigInt(data.pacienteId), dataAlta: null },
     });
@@ -41,7 +35,6 @@ export class InternacoesService {
       );
     }
 
-    // Verifica se o leito existe
     const leito = await this.prisma.leito.findUnique({
       where: { id: BigInt(data.leitoId) },
     });
@@ -50,17 +43,14 @@ export class InternacoesService {
       throw new NotFoundException('Leito não encontrado.');
     }
 
-    // Verifica se o leito está ocupado
     if (leito.status === 'ocupado') {
       throw new BadRequestException('Este leito já está ocupado.');
     }
 
-    // Verifica se o leito está em manutenção
     if (leito.status === 'manutencao') {
       throw new BadRequestException('Este leito está em manutenção.');
     }
 
-    // Criar internação
     const internacao = await this.prisma.internacao.create({
       data: {
         pacienteId: BigInt(data.pacienteId),
@@ -73,7 +63,6 @@ export class InternacoesService {
       },
     });
 
-    // Atualizar status do leito para "ocupado"
     await this.prisma.leito.update({
       where: { id: BigInt(data.leitoId) },
       data: { status: 'ocupado' },
@@ -82,9 +71,6 @@ export class InternacoesService {
     return internacao;
   }
 
-  // ---------------------------------------------------------------------------
-  // BUSCAR UMA INTERNAÇÃO
-  // ---------------------------------------------------------------------------
   async findOne(id: number | bigint) {
     const internacao = await this.prisma.internacao.findUnique({
       where: { id: BigInt(id) },
@@ -101,9 +87,6 @@ export class InternacoesService {
     return internacao;
   }
 
-  // ---------------------------------------------------------------------------
-  // ATUALIZAR INTERNAÇÃO
-  // ---------------------------------------------------------------------------
   async update(
     id: number | bigint,
     data: {
@@ -113,7 +96,6 @@ export class InternacoesService {
       dataAlta?: string | null;
     },
   ) {
-    // Verifica se a internação existe
     const internacao = await this.prisma.internacao.findUnique({
       where: { id: BigInt(id) },
     });
@@ -122,9 +104,7 @@ export class InternacoesService {
       throw new NotFoundException('Internação não encontrada.');
     }
 
-    // Se estiver alterando o leito
     if (data.leitoId && BigInt(data.leitoId) !== internacao.leitoId) {
-      // Verifica se o novo leito existe
       const novoLeito = await this.prisma.leito.findUnique({
         where: { id: BigInt(data.leitoId) },
       });
@@ -133,7 +113,6 @@ export class InternacoesService {
         throw new NotFoundException('Leito não encontrado.');
       }
 
-      // Verifica se o novo leito está disponível
       if (novoLeito.status === 'ocupado') {
         throw new BadRequestException('Este leito já está ocupado.');
       }
@@ -142,7 +121,6 @@ export class InternacoesService {
         throw new BadRequestException('Este leito está em manutenção.');
       }
 
-      // Libera o leito antigo (se a internação ainda não teve alta)
       if (internacao.dataAlta === null) {
         await this.prisma.leito.update({
           where: { id: internacao.leitoId },
@@ -150,14 +128,12 @@ export class InternacoesService {
         });
       }
 
-      // Ocupa o novo leito
       await this.prisma.leito.update({
         where: { id: BigInt(data.leitoId) },
         data: { status: 'ocupado' },
       });
     }
 
-    // Atualiza a internação
     const updateData: {
       pacienteId?: bigint;
       leitoId?: bigint;
@@ -183,9 +159,6 @@ export class InternacoesService {
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // REMOVER INTERNAÇÃO
-  // ---------------------------------------------------------------------------
   async remove(id: number | bigint) {
     const internacao = await this.prisma.internacao.findUnique({
       where: { id: BigInt(id) },
@@ -195,7 +168,6 @@ export class InternacoesService {
       throw new NotFoundException('Internação não encontrada.');
     }
 
-    // Se a internação ainda não teve alta, libera o leito
     if (internacao.dataAlta === null) {
       await this.prisma.leito.update({
         where: { id: internacao.leitoId },
@@ -208,11 +180,7 @@ export class InternacoesService {
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // DAR ALTA
-  // ---------------------------------------------------------------------------
   async alta(id: number | bigint) {
-    // Busca internação ativa
     const internacao = await this.prisma.internacao.findUnique({
       where: { id: BigInt(id) },
     });
@@ -225,13 +193,11 @@ export class InternacoesService {
       throw new BadRequestException('Esta internação já possui alta.');
     }
 
-    // Dar alta
     const updated = await this.prisma.internacao.update({
       where: { id: BigInt(id) },
       data: { dataAlta: new Date() },
     });
 
-    // Liberar leito
     await this.prisma.leito.update({
       where: { id: internacao.leitoId },
       data: { status: 'livre' },

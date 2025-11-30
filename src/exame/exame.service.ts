@@ -9,7 +9,6 @@ export class ExameService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateExameDto) {
-    // checa existência da consulta (evita P2003)
     const consulta = await this.prisma.consulta.findUnique({
       where: { id: Number(data.consultaId) },
       select: { id: true },
@@ -65,7 +64,6 @@ export class ExameService {
   }
 
   async update(id: number, data: UpdateExameDto) {
-    // se mudar consultaId, valida
     if (data.consultaId != null) {
       const exists = await this.prisma.consulta.findUnique({
         where: { id: Number(data.consultaId) },
@@ -99,7 +97,6 @@ export class ExameService {
   }
 
   async remove(id: number) {
-    // opcional: garantir 404 amigável
     const found = await this.prisma.exame.findUnique({ where: { id } });
     if (!found) throw new NotFoundException(`Exame ${id} não encontrado.`);
 
@@ -107,7 +104,6 @@ export class ExameService {
     return { ok: true };
   }
 
-  /** contador rápido de pendentes = resultado null */
   async countPendentes() {
     const qtd = await this.prisma.exame.count({ where: { resultado: null } });
     return { pendentes: qtd };

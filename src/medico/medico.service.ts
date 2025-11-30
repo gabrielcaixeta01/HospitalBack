@@ -14,11 +14,9 @@ import { UpdateMedicoDto } from './dto/update-medico-dto';
 export class MedicosService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Cria um médico e (opcionalmente) associa especialidades (m:n implícito)
   async create(data: CreateMedicoDto) {
     const { nome, crm, telefone, email, especialidadeIds } = data;
 
-    // valida IDs de especialidade se vieram
     if (Array.isArray(especialidadeIds) && especialidadeIds.length > 0) {
       const found = await this.prisma.especialidade.findMany({
         where: { id: { in: especialidadeIds } },
@@ -55,7 +53,6 @@ export class MedicosService {
         err instanceof Prisma.PrismaClientKnownRequestError &&
         err.code === 'P2002'
       ) {
-        // Unique (ex.: crm ou email)
         throw new ConflictException(
           'Já existe um médico com o mesmo CRM ou e-mail.',
         );
@@ -64,7 +61,6 @@ export class MedicosService {
     }
   }
 
-  // Lista todos
   async findAll() {
     return this.prisma.medico.findMany({
       include: { especialidades: true },
@@ -72,7 +68,6 @@ export class MedicosService {
     });
   }
 
-  // Busca 1 médico
   async findMedico(id: number) {
     const numericId = Number(id);
     if (!Number.isInteger(numericId) || numericId <= 0) {
@@ -89,7 +84,6 @@ export class MedicosService {
     return medico;
   }
 
-  // Remove 1 médico
   async deleteMedico(id: number) {
     const numericId = Number(id);
     if (!Number.isInteger(numericId) || numericId <= 0) {
@@ -100,7 +94,6 @@ export class MedicosService {
     return this.prisma.medico.delete({ where: { id: numericId } });
   }
 
-  // Atualiza dados e relações (m:n implícito com 'especialidades')
   async updateMedico(id: number, data: UpdateMedicoDto) {
     const numericId = Number(id);
     if (!Number.isInteger(numericId) || numericId <= 0) {
@@ -118,7 +111,6 @@ export class MedicosService {
       replaceEspecialidadeIds,
     } = data;
 
-    // valida qualquer ID que chegar (connect/set)
     const idsToValidate = (replaceEspecialidadeIds ?? [])
       .concat(especialidadeIdsToConnect ?? []);
     if (idsToValidate.length > 0) {
@@ -135,7 +127,6 @@ export class MedicosService {
       }
     }
 
-    // monta mutação de relação apenas se houver algo a fazer
     const relationMutation: Prisma.MedicoUpdateInput['especialidades'] =
       Array.isArray(replaceEspecialidadeIds)
         ? {
@@ -194,7 +185,6 @@ export class MedicosService {
     }
   }
 
-  // Utilitário
   private async ensureExists(id: number) {
     const found = await this.prisma.medico.findUnique({ where: { id } });
     if (!found) throw new NotFoundException(`Médico com ID ${id} não encontrado.`);

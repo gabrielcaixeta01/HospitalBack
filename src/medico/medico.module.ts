@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { MedicosService } from './medico.service';
 import { MedicosController } from './medico.controller';

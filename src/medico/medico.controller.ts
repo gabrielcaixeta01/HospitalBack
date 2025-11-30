@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-import { Public } from 'src/auth/decorators/public.decorator';
 import { CreateMedicoDto } from './dto/create-medico-dto';
 import { UpdateMedicoDto } from './dto/update-medico-dto';
 import { MedicosService } from './medico.service';
@@ -20,22 +19,16 @@ import {
 export class MedicosController {
   constructor(private readonly medicosService: MedicosService) {}
 
-  // Cria um médico
-  @Public()
   @Post()
   async create(@Body(ValidationPipe) medicoData: CreateMedicoDto) {
     return this.medicosService.create(medicoData);
   }
 
-  // Retorna todos os médicos
-  @Public()
   @Get()
   findAll() {
     return this.medicosService.findAll();
   }
 
-  // Retorna um médico específico pelo ID
-  @Public()
   @Get(':id')
   async findMedico(@Param('id', ParseIntPipe) id: number) {
     const medico = await this.medicosService.findMedico(id);
@@ -45,15 +38,11 @@ export class MedicosController {
     return medico;
   }
 
-  // Exclui um médico pelo ID
-  @Public()
   @Delete(':id')
   async deleteMedico(@Param('id', ParseIntPipe) id: number) {
     return this.medicosService.deleteMedico(id);
   }
 
-  // Atualiza as informações de um médico pelo ID
-  @Public()
   @Patch(':id')
   async updateMedico(
     @Param('id', ParseIntPipe) id: number,
