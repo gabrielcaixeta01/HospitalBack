@@ -11,6 +11,12 @@ async function bootstrap() {
     },
   });
 
+  app.enableCors({
+    origin: "*",
+    methods: "GET,POST,PATCH,DELETE,PUT,OPTIONS",
+    allowedHeaders: "*",
+  });
+
   app.setGlobalPrefix('api/v1');
 
   app.useGlobalPipes(
@@ -22,6 +28,7 @@ async function bootstrap() {
   );
 
   await app.listen(process.env.PORT || 4000);
+  console.log("BACKEND ON: http://localhost:4000/api/v1");
 }
 
 bootstrap().catch((err) => {
