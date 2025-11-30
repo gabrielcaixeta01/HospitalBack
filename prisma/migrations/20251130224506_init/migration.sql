@@ -78,30 +78,6 @@ CREATE TABLE "internacao" (
 );
 
 -- CreateTable
-CREATE TABLE "arquivo_clinico" (
-    "id" BIGSERIAL NOT NULL,
-    "pacienteId" BIGINT NOT NULL,
-    "tipo" VARCHAR(80),
-    "titulo" VARCHAR(160),
-    "url" VARCHAR(400) NOT NULL,
-    "criadoEm" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "arquivo_clinico_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "usuario" (
-    "id" BIGSERIAL NOT NULL,
-    "nome" VARCHAR(120) NOT NULL,
-    "email" VARCHAR(120) NOT NULL,
-    "senha" VARCHAR(255) NOT NULL,
-    "profilepic" TEXT,
-    "criadoEm" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "usuario_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "_EspecialidadeToMedico" (
     "A" BIGINT NOT NULL,
     "B" BIGINT NOT NULL,
@@ -137,12 +113,6 @@ CREATE INDEX "internacao_pacienteId_idx" ON "internacao"("pacienteId");
 CREATE INDEX "internacao_leitoId_idx" ON "internacao"("leitoId");
 
 -- CreateIndex
-CREATE INDEX "arquivo_clinico_pacienteId_idx" ON "arquivo_clinico"("pacienteId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "usuario_email_key" ON "usuario"("email");
-
--- CreateIndex
 CREATE INDEX "_EspecialidadeToMedico_B_index" ON "_EspecialidadeToMedico"("B");
 
 -- AddForeignKey
@@ -159,9 +129,6 @@ ALTER TABLE "internacao" ADD CONSTRAINT "internacao_pacienteId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "internacao" ADD CONSTRAINT "internacao_leitoId_fkey" FOREIGN KEY ("leitoId") REFERENCES "leito"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "arquivo_clinico" ADD CONSTRAINT "arquivo_clinico_pacienteId_fkey" FOREIGN KEY ("pacienteId") REFERENCES "paciente"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_EspecialidadeToMedico" ADD CONSTRAINT "_EspecialidadeToMedico_A_fkey" FOREIGN KEY ("A") REFERENCES "especialidade"("id") ON DELETE CASCADE ON UPDATE CASCADE;
