@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { CreatePacienteDto } from './dto/create-paciente-dto';
 import { UpdatePacienteDto } from './dto/update-paciente-dto';
 import { PacientesService } from './paciente.service';

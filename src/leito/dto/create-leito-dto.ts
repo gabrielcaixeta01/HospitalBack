@@ -3,5 +3,5 @@ import { IsNotEmpty, IsString } from 'class-validator';
 export class CreateLeitoDto {
   @IsString()
   @IsNotEmpty()
-  codigo!: string; // Ex.: "A-201"
+  codigo!: string;
 }

@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { IsInt, IsOptional, IsISO8601, Min } from 'class-validator';
 
 export class CreateInternacaoDto {
@@ -11,9 +10,9 @@ export class CreateInternacaoDto {
   leitoId!: number;
 
   @IsISO8601({ strict: true }, { message: 'dataEntrada deve ser ISO 8601' })
-  dataEntrada!: string; // ISO string
+  dataEntrada!: string;
 
   @IsOptional()
   @IsISO8601({ strict: true }, { message: 'dataAlta deve ser ISO 8601' })
-  dataAlta?: string | null; // ISO string ou null
+  dataAlta?: string | null;
 }

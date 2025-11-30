@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateConsultaDto } from './dto/create-consulta-dto';
@@ -10,7 +9,6 @@ export class ConsultasService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateConsultaDto) {
-    // validação leve de ISO
     if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(data.dataHora)) {
       throw new BadRequestException('Envie dataHora em ISO UTC, ex: 2025-11-03T13:30:00Z');
     }
@@ -31,7 +29,6 @@ export class ConsultasService {
       });
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2003') {
-        // FK inválida
         throw new BadRequestException('medicoId ou pacienteId inválidos.');
       }
       throw err;
@@ -61,7 +58,6 @@ export class ConsultasService {
   }
 
   async update(id: number, data: UpdateConsultaDto) {
-    // build payload incremental
     const updateData: Prisma.ConsultaUpdateInput = {};
     if (data.dataHora) {
       if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(data.dataHora)) {

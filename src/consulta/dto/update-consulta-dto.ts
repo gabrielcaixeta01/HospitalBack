@@ -1,12 +1,18 @@
-/* eslint-disable prettier/prettier */
-import { PartialType } from '@nestjs/swagger';
-import { CreateConsultaDto } from './create-consulta-dto';
-import { IsInt, IsOptional, IsPositive, IsISO8601 } from 'class-validator';
+import { IsInt, IsOptional, IsPositive, IsISO8601, IsString } from 'class-validator';
 
-export class UpdateConsultaDto extends PartialType(CreateConsultaDto) {
+export class UpdateConsultaDto {
+
   @IsOptional()
   @IsISO8601({ strict: true })
   dataHora?: string;
+
+  @IsOptional()
+  @IsString()
+  motivo?: string;
+
+  @IsOptional()
+  @IsString()
+  notas?: string;
 
   @IsOptional()
   @IsInt()

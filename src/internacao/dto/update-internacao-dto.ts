@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { IsInt, IsOptional, IsISO8601, Min } from 'class-validator';
 
 export class UpdateInternacaoDto {
@@ -14,9 +13,9 @@ export class UpdateInternacaoDto {
 
   @IsOptional()
   @IsISO8601({ strict: true })
-  dataEntrada?: string; // ISO opcional
+  dataEntrada?: string;
 
   @IsOptional()
   @IsISO8601({ strict: true })
-  dataAlta?: string | null; // ISO opcional
+  dataAlta?: string | null;
 }

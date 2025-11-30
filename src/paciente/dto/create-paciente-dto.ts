@@ -1,18 +1,17 @@
-/* eslint-disable prettier/prettier */
 import { IsEmail, IsOptional, IsString, IsNotEmpty, IsIn, IsDateString } from 'class-validator';
 
 export class CreatePacienteDto {
     @IsString()
     @IsNotEmpty()
-    nome: string;
+    nome!: string;
 
     @IsString()
     @IsNotEmpty()
-    cpf: string;
+    cpf!: string;
 
     @IsDateString()
     @IsNotEmpty()
-    dataNascimento: string;
+    dataNascimento!: string;
 
     @IsOptional()
     @IsIn(['M', 'F', 'O'])
@@ -20,11 +19,11 @@ export class CreatePacienteDto {
 
     @IsString()
     @IsNotEmpty()
-    telefone: string;
+    telefone!: string;
 
     @IsEmail()
     @IsNotEmpty()
-    email: string;
+    email!: string;
 
     @IsString()
     @IsOptional()

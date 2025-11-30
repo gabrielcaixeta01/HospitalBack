@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import {
   Body, Controller, Get, Post, Patch, Delete,
   Param, ParseIntPipe, ValidationPipe,

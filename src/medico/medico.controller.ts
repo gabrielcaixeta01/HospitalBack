@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { CreateMedicoDto } from './dto/create-medico-dto';
 import { UpdateMedicoDto } from './dto/update-medico-dto';
 import { MedicosService } from './medico.service';

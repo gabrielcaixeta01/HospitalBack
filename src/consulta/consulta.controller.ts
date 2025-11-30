@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { ConsultasService } from './consulta.service';
 import { CreateConsultaDto } from './dto/create-consulta-dto';

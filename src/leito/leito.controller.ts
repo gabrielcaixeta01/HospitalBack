@@ -1,12 +1,11 @@
-/* eslint-disable prettier/prettier */
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
-import { LeitoService } from './leito.service';  // <-- IMPORTAÇÃO CORRETA
+import { LeitoService } from './leito.service';
 import { CreateLeitoDto } from './dto/create-leito-dto';
 import { UpdateLeitoDto } from './dto/update-leito-dto';
 
 @Controller('leitos')
 export class LeitosController {
-  constructor(private readonly service: LeitoService) {}  // <-- SERVICE CORRETO
+  constructor(private readonly service: LeitoService) {}
 
   @Post()
   create(@Body() dto: CreateLeitoDto) {
@@ -15,7 +14,7 @@ export class LeitosController {
 
   @Get()
   findAll() {
-    return this.service.findAll();  // <-- AGORA CHAMA O findAll COM INTERNACOES
+    return this.service.findAll(); 
   }
 
   @Get(':id')

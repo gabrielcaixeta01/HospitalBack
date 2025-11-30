@@ -1,6 +1,6 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateEspecialidadeDto } from './create-especialidade-dto';
+import { IsNotEmpty } from 'class-validator';
 
-export class UpdateEspecialidadeDto extends PartialType(
-  CreateEspecialidadeDto,
-) {}
+export class UpdateEspecialidadeDto {
+  @IsNotEmpty()
+  nome!: string;
+}

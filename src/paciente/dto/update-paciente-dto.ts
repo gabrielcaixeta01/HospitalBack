@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { IsEmail, IsOptional, IsString, IsIn, IsDateString } from 'class-validator';
 
 export class UpdatePacienteDto {

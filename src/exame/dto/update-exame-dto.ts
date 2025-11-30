@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { IsInt, IsOptional, IsString, IsISO8601 } from 'class-validator';
 
 export class UpdateExameDto {
@@ -12,7 +11,7 @@ export class UpdateExameDto {
 
   @IsOptional()
   @IsString()
-  resultado?: string | null; // null para “pendente”
+  resultado?: string | null;
 
   @IsOptional()
   @IsISO8601()

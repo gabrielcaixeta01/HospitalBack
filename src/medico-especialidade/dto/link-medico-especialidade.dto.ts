@@ -5,5 +5,5 @@ export class LinkMedicoEspecialidadeDto {
   @ArrayNotEmpty()
   @IsInt({ each: true })
   @Min(1, { each: true })
-  especialidadeIds: number[];
+  especialidadeIds!: number[];
 }

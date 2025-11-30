@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { InternacoesController } from './internacao.controller';
 import { InternacoesService } from './internacao.service';
