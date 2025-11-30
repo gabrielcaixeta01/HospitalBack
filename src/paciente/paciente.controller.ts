@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Public } from 'src/auth/decorators/public.decorator';
 import { CreatePacienteDto } from './dto/create-paciente-dto';
 import { UpdatePacienteDto } from './dto/update-paciente-dto';
@@ -19,21 +20,18 @@ import {
 export class PacientesController {
   constructor(private readonly pacientesService: PacientesService) {}
 
-  // Cria um paciente
   @Public()
   @Post()
   async create(@Body(ValidationPipe) pacienteData: CreatePacienteDto) {
     return this.pacientesService.create(pacienteData);
   }
 
-  // Retorna todos os pacientes
   @Public()
   @Get()
   findAll() {
     return this.pacientesService.findAll();
   }
 
-  // Retorna um paciente específico pelo ID
   @Public()
   @Get(':id')
   async findPaciente(@Param('id', ParseIntPipe) id: number) {
@@ -44,14 +42,12 @@ export class PacientesController {
     return paciente;
   }
 
-  // Exclui um paciente pelo ID
   @Public()
   @Delete(':id')
   async deletePaciente(@Param('id', ParseIntPipe) id: number) {
     return this.pacientesService.deletePaciente(id);
   }
 
-  // Atualiza as informações de um paciente pelo ID
   @Public()
   @Patch(':id')
   async updatePaciente(

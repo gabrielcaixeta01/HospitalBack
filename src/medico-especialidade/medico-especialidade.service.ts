@@ -14,16 +14,13 @@ function toBigInt(id: string | number | bigint): bigint {
 export class MedicoEspecialidadeService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Adiciona várias especialidades a um médico
   async addEspecialidades(medicoIdInput: string | number | bigint, especialidadeIds: Array<string | number | bigint>) {
     const medicoId = toBigInt(medicoIdInput);
     const espIds = especialidadeIds.map(toBigInt);
 
-    // valida médico
     const medico = await this.prisma.medico.findUnique({ where: { id: medicoId } });
     if (!medico) throw new NotFoundException('Médico não encontrado.');
 
-    // valida especialidades
     if (!espIds.length) throw new BadRequestException('Informe pelo menos um ID de especialidade.');
     const found = await this.prisma.especialidade.findMany({
       where: { id: { in: espIds } },
@@ -35,7 +32,6 @@ export class MedicoEspecialidadeService {
       throw new BadRequestException(`Especialidade(s) inexistente(s): ${missing.join(', ')}`);
     }
 
-    // M:N implícito: connect direto no campo "especialidades"
     return this.prisma.medico.update({
       where: { id: medicoId },
       data: {
@@ -43,11 +39,10 @@ export class MedicoEspecialidadeService {
           connect: espIds.map(id => ({ id })),
         },
       },
-      include: { especialidades: true }, // ✅ não existe "especialidade" aqui
+      include: { especialidades: true },
     });
   }
 
-  // Remove uma especialidade do médico
   async removeEspecialidade(medicoIdInput: string | number | bigint, especialidadeIdInput: string | number | bigint) {
     const medicoId = toBigInt(medicoIdInput);
     const especialidadeId = toBigInt(especialidadeIdInput);
@@ -55,7 +50,6 @@ export class MedicoEspecialidadeService {
     const medico = await this.prisma.medico.findUnique({ where: { id: medicoId } });
     if (!medico) throw new NotFoundException('Médico não encontrado.');
 
-    // M:N implícito: disconnect
     return this.prisma.medico.update({
       where: { id: medicoId },
       data: {
@@ -67,7 +61,6 @@ export class MedicoEspecialidadeService {
     });
   }
 
-  // (opcional) Lista especialidades de um médico
   async listEspecialidadesDoMedico(medicoIdInput: string | number | bigint) {
     const medicoId = toBigInt(medicoIdInput);
     const medico = await this.prisma.medico.findUnique({

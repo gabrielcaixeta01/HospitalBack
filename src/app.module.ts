@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
@@ -9,8 +10,7 @@ import { ConsultasModule } from './consulta/consulta.module';
 import { InternacoesModule } from './internacao/internacao.module';
 import { LeitosModule } from './leito/leito.module';
 import { ExameModule } from './exame/exame.module';
-import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -25,11 +25,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
     InternacoesModule,
     LeitosModule,
   ],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-  ],
+  providers: [AppService],
+  
 })
 export class AppModule {}

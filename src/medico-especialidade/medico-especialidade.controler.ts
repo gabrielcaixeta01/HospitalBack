@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Body,
   Controller,
@@ -13,17 +14,15 @@ import { LinkMedicoEspecialidadeDto } from './dto/link-medico-especialidade.dto'
 export class MedicoEspecialidadeController {
   constructor(private readonly service: MedicoEspecialidadeService) {}
 
-  // POST /medicos/:medicoId/especialidades
   @Post(':medicoId/especialidades')
   add(
     @Param('medicoId') medicoIdParam: string,
     @Body() dto: LinkMedicoEspecialidadeDto,
   ) {
-    const medicoId = BigInt(medicoIdParam); // seu ID é BigInt
+    const medicoId = BigInt(medicoIdParam);
     return this.service.addEspecialidades(medicoId, dto.especialidadeIds);
   }
 
-  // DELETE /medicos/:medicoId/especialidades/:especialidadeId
   @Delete(':medicoId/especialidades/:especialidadeId')
   remove(
     @Param('medicoId') medicoIdParam: string,

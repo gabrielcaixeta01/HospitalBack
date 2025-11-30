@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Controller,
   Get,
@@ -27,7 +28,6 @@ export class UserController {
   @Public()
   @Post()
   async create(@Body(ValidationPipe) userData: CreateUserDto) {
-    // profilepic was removed from schema; ignore any such field
     return await this.userService.create(userData);
   }
 
@@ -59,7 +59,6 @@ export class UserController {
   @Get('email/:email')
   async findUserByEmail(@Param('email') email: string) {
     try {
-      // Use the public variant to avoid returning the senha (password hash)
       const user = await this.userService.findPublicByEmail(email);
       if (!user) {
         throw new NotFoundException(
@@ -109,13 +108,11 @@ export class UserController {
     @CurrentUser() currentUser: UserPayload,
   ) {
     try {
-      // Verifica permissão
       if (id !== currentUser.sub) {
         throw new UnauthorizedException(
           'Você só pode editar sua própria conta.',
         );
       }
-      // profilepic removed from schema; ignore profilepic in payload if present
       const updated = await this.userService.updateUser(id, data);
       return updated;
     } catch (error: unknown) {

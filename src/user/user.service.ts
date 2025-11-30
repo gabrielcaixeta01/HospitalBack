@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Injectable,
   NotFoundException,
@@ -13,7 +14,6 @@ import * as bcrypt from 'bcrypt';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Fields returned to clients (exclude senha)
   private readonly publicSelect = {
     id: true,
     nome: true,
@@ -21,16 +21,13 @@ export class UsersService {
     criadoEm: true,
   } as const;
 
-  // Cria um usuário
   async create(data: CreateUserDto) {
     const { nome, email } = data;
-    // Accept either `senha` (Portuguese) or `password` (English) from different frontends
     const maybe = data as unknown as { senha?: string; password?: string };
     const rawPassword = maybe.senha ?? maybe.password;
     if (!rawPassword || typeof rawPassword !== 'string') {
       throw new BadRequestException('Password (senha) is required');
     }
-    // hash senha before persisting
     const hashed = await bcrypt.hash(rawPassword, 10);
 
     const payload: Partial<Prisma.UserCreateInput> = {
@@ -38,26 +35,21 @@ export class UsersService {
       email,
       senha: hashed,
     };
-    // profilepic removed from schema; no normalization needed
 
-    // create and return a public view (exclude senha)
     return await this.prisma.user.create({
       data: payload as Prisma.UserCreateInput,
       select: this.publicSelect,
     });
   }
 
-  // Verify password for a Prisma User record
   async verifyPassword(user: { senha: string }, password: string) {
     return bcrypt.compare(password, user.senha);
   }
 
-  // Retorna todos os usuários
   async findAll() {
     return await this.prisma.user.findMany({ select: this.publicSelect });
   }
 
-  // find a single user for public consumption (no senha)
   async findUser(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -71,17 +63,14 @@ export class UsersService {
     return user;
   }
 
-  // Compatibility methods expected by controllers
   async findUserById(id: number) {
     return this.findUser(id);
   }
 
-  // This method is used by AuthService and must include the senha for password verification.
   async findUserByEmail(email: string) {
     return await this.prisma.user.findUnique({ where: { email } });
   }
 
-  // Public variant that excludes senha
   async findPublicByEmail(email: string) {
     return await this.prisma.user.findUnique({
       where: { email },
@@ -96,14 +85,12 @@ export class UsersService {
       throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
     }
 
-    // delete and return public view
     return await this.prisma.user.delete({
       where: { id },
       select: this.publicSelect,
     });
   }
 
-  // Atualiza um usuário
   async updateUser(id: number, data: UpdateUserDto) {
     const updateData: Partial<UpdateUserDto> = { ...data };
 
