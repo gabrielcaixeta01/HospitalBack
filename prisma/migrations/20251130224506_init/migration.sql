@@ -1,9 +1,4 @@
--- DDL para Criação do Esquema de Banco de Dados Hospitalar (PostgreSQL)
-
--- ===============================================
--- 1. CRIAÇÃO DAS TABELAS BÁSICAS (10 ENTIDADES)
--- ===============================================
-
+-- DDL
 -- Tabela PACIENTE
 CREATE TABLE paciente (
     id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -69,14 +64,14 @@ CREATE TABLE exame (
     data_hora   TIMESTAMP
 );
 
--- Tabela PRESCRICAO (8ª Entidade - FK para Consulta)
+-- Tabela PRESCRICAO (FK para Consulta)
 CREATE TABLE prescricao (
     id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     consulta_id BIGINT NOT NULL REFERENCES consulta (id) ON DELETE CASCADE,
     texto       TEXT NOT NULL
 );
 
--- Tabela MEDICO_ESPECIALIDADE (9ª Entidade - Associação N:N Explícita)
+-- Tabela MEDICO_ESPECIALIDADE (N:N )
 CREATE TABLE medico_especialidade (
     id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     medico_id       BIGINT NOT NULL REFERENCES medico (id) ON DELETE CASCADE,
@@ -84,22 +79,19 @@ CREATE TABLE medico_especialidade (
     UNIQUE (medico_id, especialidade_id)
 );
 
--- Tabela ARQUIVO_CLINICO (10ª Entidade - Para dados binários BYTEA)
+-- Tabela ARQUIVO_CLINICO (dados binários BYTEA)
 CREATE TABLE arquivo_clinico (
     id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     paciente_id     BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE,
     nome_arquivo    VARCHAR(180) NOT NULL,
     mime_type       VARCHAR (80) NOT NULL,
-    conteudo        BYTEA NOT NULL, -- Campo para dados binários (PDF, imagens)
+    conteudo        BYTEA NOT NULL, 
     criado_em       TIMESTAMP NOT NULL DEFAULT now()
 );
 
--- ===============================================
--- 2. IMPLEMENTAÇÃO DE OBJETOS AVANÇADOS
--- ===============================================
 
--- 2.1. TRIGGER: Atualização Automática de Status do Leito
 
+--  TRIGGER: Atualização Automática de Status do Leito
 -- Função: Atualiza 'ocupado = TRUE' quando uma internação ativa é criada, e FALSE na alta.
 CREATE OR REPLACE FUNCTION Atualizar_Status_Leito_Internacao()
 RETURNS TRIGGER AS $$
@@ -129,7 +121,7 @@ AFTER INSERT OR UPDATE ON internacao
 FOR EACH ROW
 EXECUTE FUNCTION Atualizar_Status_Leito_Internacao();
 
--- 2.2. PROCEDURE (FUNCTION): Registrar Consulta Verificada
+-- PROCEDURE (FUNCTION): Registrar Consulta Verificada
 
 -- Função que registra uma consulta verificando se o médico possui a especialidade informada.
 CREATE OR REPLACE FUNCTION Registrar_Consulta_Verificada(
@@ -168,7 +160,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 2.3. VIEW: Internações Ativas Detalhadas
+-- VIEW: Internações Ativas Detalhadas
 
 -- View que lista todas as internações ativas, incluindo detalhes do paciente, leito e o médico da última consulta.
 CREATE VIEW Internacoes_Ativas_Detalhes AS
