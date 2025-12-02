@@ -1,108 +1,110 @@
 -- DDL para Criação do Esquema de Banco de Dados Hospitalar (PostgreSQL)
 
+-- ===============================================
+-- 1. CRIAÇÃO DAS TABELAS BÁSICAS (10 ENTIDADES)
+-- ===============================================
 
--- Tabela PACIENTE 
+-- Tabela PACIENTE
 CREATE TABLE paciente (
-    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, -- [cite: 137, 138, 163]
-    nome        VARCHAR (120) NOT NULL, [cite: 164]
-    cpf         VARCHAR (14) UNIQUE NOT NULL, -- Restrição de unicidade [cite: 148, 165]
-    nascimento  DATE NOT NULL, [cite: 168]
-    sexo        CHAR (1) CHECK (sexo IN ('M', 'F','O')), -- Restrição de domínio [cite: 150, 172]
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nome        VARCHAR (120) NOT NULL,
+    cpf         VARCHAR (14) UNIQUE NOT NULL,
+    nascimento  DATE NOT NULL,
+    sexo        CHAR (1) CHECK (sexo IN ('M', 'F','O')),
     telefone    VARCHAR (40),
     email       VARCHAR (120),
     observacoes TEXT
 );
 
--- Tabela MEDICO 
+-- Tabela MEDICO
 CREATE TABLE medico (
-    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, [cite: 182]
-    nome        VARCHAR (120) NOT NULL, [cite: 185]
-    crm         VARCHAR (40) UNIQUE, -- crm é UNIQUE, conforme requisito [cite: 148]
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nome        VARCHAR (120) NOT NULL,
+    crm         VARCHAR (40) UNIQUE,
     telefone    VARCHAR (40),
     email       VARCHAR (120)
 );
 
--- Tabela ESPECIALIDADE 
+-- Tabela ESPECIALIDADE
 CREATE TABLE especialidade (
-    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, [cite: 196]
-    nome        VARCHAR (80) UNIQUE NOT NULL [cite: 197]
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nome        VARCHAR (80) UNIQUE NOT NULL
 );
 
 -- Tabela LEITO
 CREATE TABLE leito (
-    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, [cite: 256]
-    ala         VARCHAR (40) NOT NULL, [cite: 259]
-    numero      VARCHAR (10) NOT NULL, [cite: 261]
-    -- O esquema Prisma usa 'codigo' e 'status', mas o DDL oficial tem 'ala', 'numero' e 'ocupado'
-    ocupado     BOOLEAN NOT NULL DEFAULT FALSE, [cite: 263]
-    UNIQUE (ala, numero) -- Restrição de unicidade na combinação [cite: 149, 265]
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    ala         VARCHAR (40) NOT NULL,
+    numero      VARCHAR (10) NOT NULL,
+    ocupado     BOOLEAN NOT NULL DEFAULT FALSE,
+    UNIQUE (ala, numero)
 );
 
--- Tabela CONSULTA (FKs para Paciente e Médico) 
+-- Tabela CONSULTA (FKs para Paciente e Médico)
 CREATE TABLE consulta (
-    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, [cite: 219]
-    paciente_id BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE, -- [cite: 222, 142]
-    medico_id   BIGINT NOT NULL REFERENCES medico (id) ON DELETE RESTRICT, -- [cite: 224, 143]
-    data_hora   TIMESTAMP NOT NULL, [cite: 227]
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    paciente_id BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE,
+    medico_id   BIGINT NOT NULL REFERENCES medico (id) ON DELETE RESTRICT,
+    data_hora   TIMESTAMP NOT NULL,
     motivo      VARCHAR (255),
-    -- O DDL original usa status VARCHAR(20) NOT NULL DEFAULT 'AGENDADA'
     status      VARCHAR (20) NOT NULL DEFAULT 'AGENDADA',
-    notas       TEXT -- O esquema Prisma adiciona 'notas' (como 'resultado_texto' em Exame)
+    notas       TEXT
 );
 
--- Tabela INTERNACAO (FKs para Paciente e Leito) 
+-- Tabela INTERNACAO (FKs para Paciente e Leito)
 CREATE TABLE internacao (
-    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, [cite: 271]
-    paciente_id BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE, [cite: 273]
-    leito_id    BIGINT NOT NULL REFERENCES leito (id) ON DELETE RESTRICT, [cite: 276, 277]
-    entrada     TIMESTAMP NOT NULL, [cite: 282]
-    alta        TIMESTAMP -- Pode ser NULL (indica internação ativa) [cite: 283]
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    paciente_id BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE,
+    leito_id    BIGINT NOT NULL REFERENCES leito (id) ON DELETE RESTRICT,
+    data_entrada     TIMESTAMP NOT NULL,
+    data_alta        TIMESTAMP
 );
 
 -- Tabela EXAME (FK para Consulta)
 CREATE TABLE exame (
-    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, [cite: 241]
-    consulta_id BIGINT NOT NULL REFERENCES consulta (id) ON DELETE CASCADE, [cite: 243]
-    tipo        VARCHAR (120) NOT NULL, [cite: 247]
-    resultado_texto TEXT, -- O DDL original usa 'resultado_texto'[cite: 249], Prisma usa 'resultado'
-    data_hora   TIMESTAMP -- Adicionado para flexibilidade, mas não está no DDL original.
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    consulta_id BIGINT NOT NULL REFERENCES consulta (id) ON DELETE CASCADE,
+    tipo        VARCHAR (120) NOT NULL,
+    resultado_texto TEXT,
+    data_hora   TIMESTAMP
 );
 
--- Tabela PRESCRICAO (FK para Consulta) 
+-- Tabela PRESCRICAO (8ª Entidade - FK para Consulta)
 CREATE TABLE prescricao (
-    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, [cite: 290]
-    consulta_id BIGINT NOT NULL REFERENCES consulta (id) ON DELETE CASCADE, [cite: 292]
-    texto       TEXT NOT NULL [cite: 294, 296]
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    consulta_id BIGINT NOT NULL REFERENCES consulta (id) ON DELETE CASCADE,
+    texto       TEXT NOT NULL
 );
 
--- Tabela MEDICO_ESPECIALIDADE (Associação N:N) 
+-- Tabela MEDICO_ESPECIALIDADE (9ª Entidade - Associação N:N Explícita)
 CREATE TABLE medico_especialidade (
     id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    medico_id       BIGINT NOT NULL REFERENCES medico (id) ON DELETE CASCADE, [cite: 208]
-    especialidade_id BIGINT NOT NULL REFERENCES especialidade (id) ON DELETE RESTRICT, [cite: 209, 210, 144]
-    UNIQUE (medico_id, especialidade_id) [cite: 211]
+    medico_id       BIGINT NOT NULL REFERENCES medico (id) ON DELETE CASCADE,
+    especialidade_id BIGINT NOT NULL REFERENCES especialidade (id) ON DELETE RESTRICT,
+    UNIQUE (medico_id, especialidade_id)
 );
 
--- Tabela ARQUIVO_CLINICO (Para dados binários - BLOB) 
+-- Tabela ARQUIVO_CLINICO (10ª Entidade - Para dados binários BYTEA)
 CREATE TABLE arquivo_clinico (
-    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, [cite: 302]
-    paciente_id     BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE, [cite: 305]
-    nome_arquivo    VARCHAR(180) NOT NULL, [cite: 308]
-    mime_type       VARCHAR (80) NOT NULL, [cite: 311]
-    conteudo        BYTEA NOT NULL, -- Campo para dados binários (PDF, imagens) [cite: 131, 314]
-    criado_em       TIMESTAMP NOT NULL DEFAULT now() [cite: 317]
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    paciente_id     BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE,
+    nome_arquivo    VARCHAR(180) NOT NULL,
+    mime_type       VARCHAR (80) NOT NULL,
+    conteudo        BYTEA NOT NULL, -- Campo para dados binários (PDF, imagens)
+    criado_em       TIMESTAMP NOT NULL DEFAULT now()
 );
 
+-- ===============================================
+-- 2. IMPLEMENTAÇÃO DE OBJETOS AVANÇADOS
+-- ===============================================
 
-
----
 -- 2.1. TRIGGER: Atualização Automática de Status do Leito
 
--- Função: Atualiza 'ocupado = TRUE' quando uma internação ativa é criada.
+-- Função: Atualiza 'ocupado = TRUE' quando uma internação ativa é criada, e FALSE na alta.
 CREATE OR REPLACE FUNCTION Atualizar_Status_Leito_Internacao()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Se é uma nova internação ou se a data de alta foi removida (o que reativa)
+    -- Se é uma nova internação ou se a data de alta foi removida
     IF NEW.data_alta IS NULL THEN
         -- Atualiza o leito como ocupado
         UPDATE leito
@@ -127,7 +129,6 @@ AFTER INSERT OR UPDATE ON internacao
 FOR EACH ROW
 EXECUTE FUNCTION Atualizar_Status_Leito_Internacao();
 
----
 -- 2.2. PROCEDURE (FUNCTION): Registrar Consulta Verificada
 
 -- Função que registra uma consulta verificando se o médico possui a especialidade informada.
@@ -167,7 +168,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
----
 -- 2.3. VIEW: Internações Ativas Detalhadas
 
 -- View que lista todas as internações ativas, incluindo detalhes do paciente, leito e o médico da última consulta.
@@ -178,7 +178,7 @@ SELECT
     P.cpf AS CPFPaciente,
     L.ala AS AlaLeito,
     L.numero AS NumeroLeito,
-    I.entrada AS DataEntrada,
+    I.data_entrada AS DataEntrada,
     M_Ultima.nome AS MedicoDaUltimaConsulta
 FROM
     internacao I
@@ -191,9 +191,9 @@ LEFT JOIN LATERAL
         SELECT M.nome
         FROM consulta C
         JOIN medico M ON C.medico_id = M.id
-        WHERE C.paciente_id = P.id AND C.data_hora < I.entrada
+        WHERE C.paciente_id = P.id AND C.data_hora < I.data_entrada
         ORDER BY C.data_hora DESC
         LIMIT 1
     ) AS M_Ultima ON TRUE
 WHERE
-    I.data_alta IS NULL; -- Filtra apenas internações ativas (sem data de alta)
+    I.data_alta IS NULL;
