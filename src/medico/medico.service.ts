@@ -1,12 +1,5 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CreateMedicoDto } from './dto/create-medico-dto';
 import { UpdateMedicoDto } from './dto/update-medico-dto';
 
@@ -14,194 +7,110 @@ import { UpdateMedicoDto } from './dto/update-medico-dto';
 export class MedicosService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: CreateMedicoDto) {
-    const { nome, crm, telefone, email, especialidadeIds } = data;
-
-    if (Array.isArray(especialidadeIds) && especialidadeIds.length > 0) {
-      const found = await this.prisma.especialidade.findMany({
-        where: { id: { in: especialidadeIds } },
-        select: { id: true },
-      });
-      const foundIds = new Set(found.map((e: any) => Number(e.id)));
-      const missing = especialidadeIds.filter((id) => !foundIds.has(Number(id)));
-      if (missing.length) {
-        throw new BadRequestException(
-          `Especialidade(s) inexistente(s): ${missing.join(', ')}`,
-        );
-      }
-    }
-
-    try {
-      const medico = await this.prisma.medico.create({
-        data: {
-          nome: nome?.trim(),
-          crm: crm?.trim(),
-          telefone: telefone?.trim(),
-          email: email?.trim().toLowerCase(),
-        },
-      });
-
-      if (Array.isArray(especialidadeIds) && especialidadeIds.length > 0) {
-        await Promise.all(
-          especialidadeIds.map(espId =>
-            this.prisma.medicoEspecialidade.create({
-              data: { medicoId: medico.id, especialidadeId: BigInt(espId) },
-            })
-          )
-        );
-      }
-
-      return this.prisma.medico.findUnique({
-        where: { id: medico.id },
-        include: { medicoEspecialidade: { include: { especialidade: true } } },
-      });
-    } catch (err) {
-      if (
-        err instanceof PrismaClientKnownRequestError &&
-        (err as any).code === 'P2002'
-      ) {
-        throw new ConflictException(
-          'Já existe um médico com o mesmo CRM ou e-mail.',
-        );
-      }
-      throw err;
+  private async ensureMedicoExists(id: number) {
+    const medico = await this.prisma.medico.findUnique({ where: { id } });
+    if (!medico) {
+      throw new NotFoundException(`Médico com ID ${id} não encontrado.`);
     }
   }
 
   async findAll() {
     return this.prisma.medico.findMany({
-      include: { medicoEspecialidade: { include: { especialidade: true } } },
+      include: {
+        especialidades: true,
+      },
       orderBy: { id: 'asc' },
     });
   }
 
-  async findMedico(id: number) {
-    const numericId = Number(id);
-    if (!Number.isInteger(numericId) || numericId <= 0) {
-      throw new BadRequestException('ID inválido.');
-    }
+  async findOne(id: number) {
+    await this.ensureMedicoExists(id);
 
-    const medico = await this.prisma.medico.findUnique({
-      where: { id: numericId },
-      include: { medicoEspecialidade: { include: { especialidade: true } } },
+    return this.prisma.medico.findUnique({
+      where: { id },
+      include: {
+        especialidades: true,
+        consulta: true,
+      },
     });
-    if (!medico) {
-      throw new NotFoundException(`Médico com ID ${numericId} não encontrado.`);
-    }
-    return medico;
   }
 
-  async deleteMedico(id: number) {
-    const numericId = Number(id);
-    if (!Number.isInteger(numericId) || numericId <= 0) {
-      throw new BadRequestException('ID inválido.');
-    }
+  async create(data: CreateMedicoDto) {
+    const { especialidadesIds, ...rest } = data;
 
-    await this.ensureExists(numericId);
-    return this.prisma.medico.delete({ where: { id: numericId } });
+    return this.prisma.medico.create({
+      data: {
+        ...rest,
+        especialidades: especialidadesIds?.length
+          ? {
+              connect: especialidadesIds.map((id) => ({ id })),
+            }
+          : undefined,
+      },
+      include: { especialidades: true },
+    });
   }
 
-  async updateMedico(id: number, data: UpdateMedicoDto) {
-    const numericId = Number(id);
-    if (!Number.isInteger(numericId) || numericId <= 0) {
-      throw new BadRequestException('ID inválido.');
-    }
-    await this.ensureExists(numericId);
+  async update(id: number, data: UpdateMedicoDto) {
+    await this.ensureMedicoExists(id);
 
     const {
-      nome,
-      crm,
-      telefone,
-      email,
-      especialidadeIdsToConnect,
-      especialidadeIdsToDisconnect,
-      replaceEspecialidadeIds,
+      replaceEspecialidadesIds,
+      especialidadesIdsToConnect,
+      especialidadesIdsToDisconnect,
+      ...rest
     } = data;
 
-    const idsToValidate = (replaceEspecialidadeIds ?? [])
-      .concat(especialidadeIdsToConnect ?? []);
-    if (idsToValidate.length > 0) {
-      const found = await this.prisma.especialidade.findMany({
-        where: { id: { in: idsToValidate } },
-        select: { id: true },
-      });
-      const foundIds = new Set(found.map((e: any) => Number(e.id)));
-      const missing = idsToValidate.filter((id) => !foundIds.has(Number(id)));
-      if (missing.length) {
-        throw new BadRequestException(
-          `Especialidade(s) inexistente(s): ${missing.join(', ')}`,
-        );
-      }
-    }
+    // atualiza campos básicos do médico
+    await this.prisma.medico.update({
+      where: { id },
+      data: rest,
+    });
 
-    const relationMutation: any =
-      Array.isArray(replaceEspecialidadeIds)
-        ? {
-            set: replaceEspecialidadeIds.map((eid) => ({
-              medicoId_especialidadeId: { medicoId: BigInt(numericId), especialidadeId: BigInt(eid) },
-            })),
-          }
-        : {
-            ...(Array.isArray(especialidadeIdsToConnect) &&
-            especialidadeIdsToConnect.length > 0
-              ? {
-                  connect: especialidadeIdsToConnect.map((eid) => ({
-                    medicoId_especialidadeId: { medicoId: BigInt(numericId), especialidadeId: BigInt(eid) },
-                  })),
-                }
-              : {}),
-            ...(Array.isArray(especialidadeIdsToDisconnect) &&
-            especialidadeIdsToDisconnect.length > 0
-              ? {
-                  disconnect: especialidadeIdsToDisconnect.map((eid) => ({
-                    medicoId_especialidadeId: { medicoId: BigInt(numericId), especialidadeId: BigInt(eid) },
-                  })),
-                }
-              : {}),
-          };
-
-    try {
-      return await this.prisma.medico.update({
-        where: { id: numericId },
+    // substituir TODAS as especialidades
+    if (replaceEspecialidadesIds) {
+      await this.prisma.medico.update({
+        where: { id },
         data: {
-          ...(nome !== undefined ? { nome: nome.trim() } : {}),
-          ...(crm !== undefined ? { crm: crm.trim() } : {}),
-          ...(telefone !== undefined ? { telefone: telefone.trim() } : {}),
-          ...(email !== undefined ? { email: email.trim().toLowerCase() } : {}),
-          ...(
-            relationMutation &&
-            ('connect' in relationMutation ||
-              'disconnect' in relationMutation ||
-              'set' in relationMutation)
-              ? { medicoEspecialidade: relationMutation }
-              : {}
-          ),
+          especialidades: {
+            set: replaceEspecialidadesIds.map((eId) => ({ id: eId })),
+          },
         },
-        include: { medicoEspecialidade: { include: { especialidade: true } } },
       });
-    } catch (err) {
-      if (
-        err instanceof PrismaClientKnownRequestError &&
-        (err as any).code === 'P2002'
-      ) {
-        throw new ConflictException(
-          'Já existe um médico com o mesmo CRM ou e-mail.',
-        );
-      }
-      if (
-        err instanceof PrismaClientKnownRequestError &&
-        (err as any).code === 'P2025'
-      ) {
-        throw new NotFoundException(
-          'Recurso relacionado não encontrado ao atualizar as especialidades.',
-        );
-      }
-      throw err;
     }
+
+    // conectar novas
+    if (especialidadesIdsToConnect?.length) {
+      await this.prisma.medico.update({
+        where: { id },
+        data: {
+          especialidades: {
+            connect: especialidadesIdsToConnect.map((eId: any) => ({ id: eId })),
+          },
+        },
+      });
+    }
+
+    // desconectar algumas
+    if (especialidadesIdsToDisconnect?.length) {
+      await this.prisma.medico.update({
+        where: { id },
+        data: {
+          especialidades: {
+            disconnect: especialidadesIdsToDisconnect.map((eId: any) => ({ id: eId })),
+          },
+        },
+      });
+    }
+
+    return this.findOne(id);
   }
 
-  private async ensureExists(id: number) {
-    const found = await this.prisma.medico.findUnique({ where: { id } });
-    if (!found) throw new NotFoundException(`Médico com ID ${id} não encontrado.`);
+  async delete(id: number) {
+    await this.ensureMedicoExists(id);
+
+    return this.prisma.medico.delete({
+      where: { id },
+    });
   }
 }

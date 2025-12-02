@@ -1,6 +1,3 @@
-import { CreateMedicoDto } from './dto/create-medico-dto';
-import { UpdateMedicoDto } from './dto/update-medico-dto';
-import { MedicosService } from './medico.service';
 import {
   Body,
   Controller,
@@ -11,42 +8,56 @@ import {
   ParseIntPipe,
   Delete,
   Patch,
-  NotFoundException,
+  UsePipes,
 } from '@nestjs/common';
+
+import { MedicosService } from './medico.service';
+import { CreateMedicoDto } from './dto/create-medico-dto';
+import { UpdateMedicoDto } from './dto/update-medico-dto';
 
 @Controller('medicos')
 export class MedicosController {
   constructor(private readonly medicosService: MedicosService) {}
 
   @Post()
-  async create(@Body(ValidationPipe) medicoData: CreateMedicoDto) {
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  )
+  async create(@Body() medicoData: CreateMedicoDto) {
     return this.medicosService.create(medicoData);
   }
 
   @Get()
-  findAll() {
+  async findAll() {
     return this.medicosService.findAll();
   }
 
   @Get(':id')
   async findMedico(@Param('id', ParseIntPipe) id: number) {
-    const medico = await this.medicosService.findMedico(id);
-    if (!medico) {
-      throw new NotFoundException(`Médico com ID ${id} não encontrado.`);
-    }
-    return medico;
+    return this.medicosService.findOne(id);
   }
 
   @Delete(':id')
   async deleteMedico(@Param('id', ParseIntPipe) id: number) {
-    return this.medicosService.deleteMedico(id);
+    return this.medicosService.delete(id);
   }
 
   @Patch(':id')
+  @UsePipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  )
   async updateMedico(
     @Param('id', ParseIntPipe) id: number,
-    @Body(ValidationPipe) data: UpdateMedicoDto,
+    @Body() data: UpdateMedicoDto,
   ) {
-    return this.medicosService.updateMedico(id, data);
+    return this.medicosService.update(id, data);
   }
 }
