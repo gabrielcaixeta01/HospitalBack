@@ -104,21 +104,37 @@ CREATE TABLE arquivo_clinico (
 CREATE OR REPLACE FUNCTION Atualizar_Status_Leito_Internacao()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Se é uma nova internação ou se a data de alta foi removida
-    IF NEW.data_alta IS NULL THEN
-        -- Atualiza o leito como ocupado
+    -- Se é um INSERT (nova internação)
+    IF TG_OP = 'INSERT' THEN
+        -- Marcar leito como ocupado
         UPDATE leito
         SET ocupado = TRUE
         WHERE id = NEW.leito_id;
+    
+    -- Se é um UPDATE
+    ELSIF TG_OP = 'UPDATE' THEN
+        -- Se a data de alta foi definida (paciente recebeu alta)
+        IF OLD.data_alta IS NULL AND NEW.data_alta IS NOT NULL THEN
+            -- Verificar se há outras internações ativas no mesmo leito
+            IF NOT EXISTS (
+                SELECT 1 FROM internacao 
+                WHERE leito_id = NEW.leito_id AND data_alta IS NULL AND id != NEW.id
+            ) THEN
+                -- Nenhuma internação ativa, desocupar o leito
+                UPDATE leito
+                SET ocupado = FALSE
+                WHERE id = NEW.leito_id;
+            END IF;
+        END IF;
+        
+        -- Se a data de alta foi removida (reativar internação)
+        IF OLD.data_alta IS NOT NULL AND NEW.data_alta IS NULL THEN
+            UPDATE leito
+            SET ocupado = TRUE
+            WHERE id = NEW.leito_id;
+        END IF;
     END IF;
-
-    -- Se é uma atualização e a data de alta foi definida (paciente saiu)
-    IF OLD.data_alta IS NULL AND NEW.data_alta IS NOT NULL THEN
-        -- Atualiza o leito como desocupado
-        UPDATE leito
-        SET ocupado = FALSE
-        WHERE id = NEW.leito_id;
-    END IF;
+    
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
