@@ -1,8 +1,4 @@
--- DDL para Criação do Esquema de Banco de Dados Hospitalar (PostgreSQL)
-
--- ===============================================
--- 1. CRIAÇÃO DAS TABELAS BÁSICAS (10 ENTIDADES)
--- ===============================================
+-- DDL 
 
 -- Tabela PACIENTE
 CREATE TABLE paciente (
@@ -40,7 +36,7 @@ CREATE TABLE leito (
     UNIQUE (ala, numero)
 );
 
--- Tabela CONSULTA (FKs para Paciente e Médico)
+-- Tabela CONSULTA (FKs Paciente e Médico)
 CREATE TABLE consulta (
     id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     paciente_id BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE,
@@ -51,7 +47,7 @@ CREATE TABLE consulta (
     notas       TEXT
 );
 
--- Tabela INTERNACAO (FKs para Paciente e Leito)
+-- Tabela INTERNACAO (FKs Paciente e Leito)
 CREATE TABLE internacao (
     id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     paciente_id BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE,
@@ -60,7 +56,7 @@ CREATE TABLE internacao (
     data_alta        TIMESTAMP
 );
 
--- Tabela EXAME (FK para Consulta)
+-- Tabela EXAME (FK Consulta)
 CREATE TABLE exame (
     id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     consulta_id BIGINT NOT NULL REFERENCES consulta (id) ON DELETE CASCADE,
@@ -69,14 +65,14 @@ CREATE TABLE exame (
     data_hora   TIMESTAMP
 );
 
--- Tabela PRESCRICAO (8ª Entidade - FK para Consulta)
+-- Tabela PRESCRICAO (FK Consulta)
 CREATE TABLE prescricao (
     id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     consulta_id BIGINT NOT NULL REFERENCES consulta (id) ON DELETE CASCADE,
     texto       TEXT NOT NULL
 );
 
--- Tabela MEDICO_ESPECIALIDADE (9ª Entidade - Associação N:N Explícita)
+-- Tabela MEDICO_ESPECIALIDADE 
 CREATE TABLE medico_especialidade (
     id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     medico_id       BIGINT NOT NULL REFERENCES medico (id) ON DELETE CASCADE,
@@ -84,7 +80,7 @@ CREATE TABLE medico_especialidade (
     UNIQUE (medico_id, especialidade_id)
 );
 
--- Tabela ARQUIVO_CLINICO (10ª Entidade - Para dados binários BYTEA)
+-- Tabela ARQUIVO_CLINICO 
 CREATE TABLE arquivo_clinico (
     id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     paciente_id     BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE,
@@ -94,11 +90,9 @@ CREATE TABLE arquivo_clinico (
     criado_em       TIMESTAMP NOT NULL DEFAULT now()
 );
 
--- ===============================================
--- 2. IMPLEMENTAÇÃO DE OBJETOS AVANÇADOS
--- ===============================================
 
--- 2.1. TRIGGER: Atualização Automática de Status do Leito
+
+--  TRIGGER: Atualização Automática de Status do Leito
 
 -- Função: Atualiza 'ocupado = TRUE' quando uma internação ativa é criada, e FALSE na alta.
 CREATE OR REPLACE FUNCTION Atualizar_Status_Leito_Internacao()
@@ -145,7 +139,7 @@ AFTER INSERT OR UPDATE ON internacao
 FOR EACH ROW
 EXECUTE FUNCTION Atualizar_Status_Leito_Internacao();
 
--- 2.2. PROCEDURE (FUNCTION): Registrar Consulta Verificada
+-- PROCEDURE (FUNCTION): Registrar Consulta Verificada
 
 -- Função que registra uma consulta verificando se o médico possui a especialidade informada.
 CREATE OR REPLACE FUNCTION Registrar_Consulta_Verificada(
@@ -184,7 +178,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 2.3. VIEW: Internações Ativas Detalhadas
+--  VIEW: Internações Ativas Detalhadas
 
 -- View que lista todas as internações ativas, incluindo detalhes do paciente, leito e o médico da última consulta.
 CREATE VIEW Internacoes_Ativas_Detalhes AS
