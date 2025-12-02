@@ -20,4 +20,8 @@ export class CreateConsultaDto {
   @IsInt()
   @IsPositive()
   pacienteId!: number;
+
+  @IsInt()
+  @IsPositive()
+  especialidadeId!: number;
 }

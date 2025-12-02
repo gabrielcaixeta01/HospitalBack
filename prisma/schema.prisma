@@ -8,27 +8,30 @@ datasource db {
 }
 
 model Consulta {
-  id         BigInt   @id @default(autoincrement())
-  dataHora   DateTime
-  motivo     String?  @db.VarChar(255)
-  notas      String?
-  medicoId   BigInt
-  pacienteId BigInt
-  medico     Medico   @relation(fields: [medicoId], references: [id])
-  paciente   Paciente @relation(fields: [pacienteId], references: [id])
-  exame      Exame[]
-  prescricao Prescricao[]
+  id              BigInt   @id @default(autoincrement())
+  dataHora        DateTime
+  motivo          String?  @db.VarChar(255)
+  notas           String?
+  medicoId        BigInt
+  pacienteId      BigInt
+  especialidadeId BigInt
+  medico          Medico   @relation(fields: [medicoId], references: [id])
+  paciente        Paciente @relation(fields: [pacienteId], references: [id])
+  especialidade   Especialidade @relation(fields: [especialidadeId], references: [id])
+  exame           Exame[]
+  prescricao      Prescricao[]
 
   @@index([medicoId])
   @@index([pacienteId])
+  @@index([especialidadeId])
   @@map("consulta")
 }
 
 model Especialidade {
-  id   BigInt   @id @default(autoincrement())
-  nome String   @unique @db.VarChar(80)
-
-  medicos Medico[] @relation("MedicoEspecialidades")
+  id                  BigInt   @id @default(autoincrement())
+  nome                String   @unique @db.VarChar(80)
+  medicoEspecialidade MedicoEspecialidade[]
+  consulta            Consulta[]
 
   @@map("especialidade")
 }
