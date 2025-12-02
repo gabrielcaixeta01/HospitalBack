@@ -8,7 +8,7 @@ export class LeitoService {
   async findAll() {
     return this.prisma.leito.findMany({
       include: {
-        internacoes: {
+        internacao: {
           where: { dataAlta: null },
           include: { paciente: true },
         },
@@ -21,7 +21,7 @@ export class LeitoService {
     return this.prisma.leito.findUnique({
       where: { id },
       include: {
-        internacoes: {
+        internacao: {
           where: { dataAlta: null },
           include: { paciente: true },
         },

@@ -34,11 +34,11 @@ export class MedicoEspecialidadeService {
     return this.prisma.medico.update({
       where: { id: medicoId },
       data: {
-        especialidades: {
+        especialidade: {
           connect: espIds.map(id => ({ id })),
         },
       },
-      include: { especialidades: true },
+      include: { especialidade: true },
     });
   }
 
@@ -52,11 +52,11 @@ export class MedicoEspecialidadeService {
     return this.prisma.medico.update({
       where: { id: medicoId },
       data: {
-        especialidades: {
+        especialidade: {
           disconnect: [{ id: especialidadeId }],
         },
       },
-      include: { especialidades: true },
+      include: { especialidade: true },
     });
   }
 
@@ -64,9 +64,9 @@ export class MedicoEspecialidadeService {
     const medicoId = toBigInt(medicoIdInput);
     const medico = await this.prisma.medico.findUnique({
       where: { id: medicoId },
-      include: { especialidades: true },
+      include: { especialidade: true },
     });
     if (!medico) throw new NotFoundException('Médico não encontrado.');
-    return medico.especialidades;
+    return medico.especialidade;
   }
 }

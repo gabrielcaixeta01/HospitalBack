@@ -58,7 +58,7 @@ export class ConsultasService {
   }
 
   async update(id: number, data: UpdateConsultaDto) {
-    const updateData: Prisma.ConsultaUpdateInput = {};
+    const updateData: Prisma.consultaUpdateInput = {};
     if (data.dataHora) {
       if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(data.dataHora)) {
         throw new BadRequestException('dataHora deve ser ISO UTC (ex.: ...Z)');

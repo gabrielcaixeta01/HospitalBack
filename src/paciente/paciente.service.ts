@@ -79,7 +79,7 @@ export class PacientesService {
   }
 
   async updatePaciente(id: number, data: UpdatePacienteDto) {
-    const updateData: Prisma.PacienteUpdateInput = {};
+    const updateData: Prisma.pacienteUpdateInput = {};
 
     if (data.nome != null) updateData.nome = data.nome.trim();
     if (data.cpf != null) updateData.cpf = cleanCpf(data.cpf);

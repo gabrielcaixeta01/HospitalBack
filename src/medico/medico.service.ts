@@ -39,13 +39,13 @@ export class MedicosService {
           email: email?.trim().toLowerCase(),
           ...(Array.isArray(especialidadeIds) && especialidadeIds.length > 0
             ? {
-                especialidades: {
+                especialidade: {
                   connect: (especialidadeIds ?? []).map((id) => ({ id: BigInt(id) })),
                 },
               }
             : {}),
         },
-        include: { especialidades: true },
+        include: { especialidade: true },
       });
     } catch (err) {
       if (
@@ -62,7 +62,7 @@ export class MedicosService {
 
   async findAll() {
     return this.prisma.medico.findMany({
-      include: { especialidades: true },
+      include: { especialidade: true },
       orderBy: { id: 'asc' },
     });
   }
@@ -75,7 +75,7 @@ export class MedicosService {
 
     const medico = await this.prisma.medico.findUnique({
       where: { id: numericId },
-      include: { especialidades: true },
+      include: { especialidade: true },
     });
     if (!medico) {
       throw new NotFoundException(`Médico com ID ${numericId} não encontrado.`);
@@ -126,7 +126,7 @@ export class MedicosService {
       }
     }
 
-    const relationMutation: Prisma.MedicoUpdateInput['especialidades'] =
+    const relationMutation: Prisma.medicoUpdateInput['especialidade'] =
       Array.isArray(replaceEspecialidadeIds)
         ? {
             set: replaceEspecialidadeIds.map((eid) => ({ id: eid })),
@@ -157,11 +157,11 @@ export class MedicosService {
             ('connect' in relationMutation ||
               'disconnect' in relationMutation ||
               'set' in relationMutation)
-              ? { especialidades: relationMutation }
+              ? { especialidade: relationMutation }
               : {}
           ),
         },
-        include: { especialidades: true },
+        include: { especialidade: true },
       });
     } catch (err) {
       if (
