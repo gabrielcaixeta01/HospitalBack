@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEspecialidadeDto } from './dto/create-especialidade-dto';
 import { UpdateEspecialidadeDto } from './dto/update-especialidade-dto';
@@ -19,7 +20,7 @@ export class EspecialidadesService {
         data: { nome: data.nome.trim() },
       });
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      if (err instanceof PrismaClientKnownRequestError && (err as any).code === 'P2002') {
         throw new BadRequestException('Especialidade já existe.');
       }
       throw err;
@@ -45,10 +46,10 @@ export class EspecialidadesService {
         data: { ...(data.nome ? { nome: data.nome.trim() } : {}) },
       });
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      if (err instanceof PrismaClientKnownRequestError && (err as any).code === 'P2025') {
         throw new NotFoundException('Especialidade não encontrada.');
       }
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      if (err instanceof PrismaClientKnownRequestError && (err as any).code === 'P2002') {
         throw new BadRequestException('Já existe uma especialidade com esse nome.');
       }
       throw err;
@@ -60,7 +61,7 @@ export class EspecialidadesService {
     try {
       return await this.prisma.especialidade.delete({ where: { id } });
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      if (err instanceof PrismaClientKnownRequestError && (err as any).code === 'P2025') {
         throw new NotFoundException('Especialidade não encontrada.');
       }
       throw err;

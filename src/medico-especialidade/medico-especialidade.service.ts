@@ -25,20 +25,25 @@ export class MedicoEspecialidadeService {
       where: { id: { in: espIds } },
       select: { id: true },
     });
-    const foundSet = new Set(found.map(e => e.id.toString()));
+    const foundSet = new Set(found.map((e: any) => e.id.toString()));
     const missing = espIds.filter(id => !foundSet.has(id.toString()));
     if (missing.length) {
       throw new BadRequestException(`Especialidade(s) inexistente(s): ${missing.join(', ')}`);
     }
 
-    return this.prisma.medico.update({
+    await Promise.all(
+      espIds.map(espId =>
+        this.prisma.medicoEspecialidade.upsert({
+          where: { medicoId_especialidadeId: { medicoId, especialidadeId: espId } },
+          update: {},
+          create: { medicoId, especialidadeId: espId },
+        })
+      )
+    );
+
+    return this.prisma.medico.findUnique({
       where: { id: medicoId },
-      data: {
-        especialidade: {
-          connect: espIds.map(id => ({ id })),
-        },
-      },
-      include: { especialidade: true },
+      include: { medicoEspecialidade: { include: { especialidade: true } } },
     });
   }
 
@@ -49,14 +54,15 @@ export class MedicoEspecialidadeService {
     const medico = await this.prisma.medico.findUnique({ where: { id: medicoId } });
     if (!medico) throw new NotFoundException('Médico não encontrado.');
 
-    return this.prisma.medico.update({
+    await this.prisma.medicoEspecialidade.delete({
+      where: { medicoId_especialidadeId: { medicoId, especialidadeId } },
+    }).catch(() => {
+      throw new NotFoundException('Relação médico-especialidade não encontrada.');
+    });
+
+    return this.prisma.medico.findUnique({
       where: { id: medicoId },
-      data: {
-        especialidade: {
-          disconnect: [{ id: especialidadeId }],
-        },
-      },
-      include: { especialidade: true },
+      include: { medicoEspecialidade: { include: { especialidade: true } } },
     });
   }
 
@@ -64,9 +70,9 @@ export class MedicoEspecialidadeService {
     const medicoId = toBigInt(medicoIdInput);
     const medico = await this.prisma.medico.findUnique({
       where: { id: medicoId },
-      include: { especialidade: true },
+      include: { medicoEspecialidade: { include: { especialidade: true } } },
     });
     if (!medico) throw new NotFoundException('Médico não encontrado.');
-    return medico.especialidade;
+    return medico.medicoEspecialidade.map(me => me.especialidade);
   }
 }

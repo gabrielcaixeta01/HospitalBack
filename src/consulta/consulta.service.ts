@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateConsultaDto } from './dto/create-consulta-dto';
 import { UpdateConsultaDto } from './dto/update-consulta-dto';
 import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class ConsultasService {
@@ -28,7 +29,7 @@ export class ConsultasService {
         },
       });
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2003') {
+      if (err instanceof PrismaClientKnownRequestError && (err as any).code === 'P2003') {
         throw new BadRequestException('medicoId ou pacienteId inválidos.');
       }
       throw err;
@@ -58,7 +59,7 @@ export class ConsultasService {
   }
 
   async update(id: number, data: UpdateConsultaDto) {
-    const updateData: Prisma.consultaUpdateInput = {};
+    const updateData: any = {};
     if (data.dataHora) {
       if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(data.dataHora)) {
         throw new BadRequestException('dataHora deve ser ISO UTC (ex.: ...Z)');
@@ -80,10 +81,10 @@ export class ConsultasService {
         },
       });
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      if (err instanceof PrismaClientKnownRequestError && (err as any).code === 'P2025') {
         throw new NotFoundException(`Consulta ${id} não encontrada.`);
       }
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2003') {
+      if (err instanceof PrismaClientKnownRequestError && (err as any).code === 'P2003') {
         throw new BadRequestException('medicoId ou pacienteId inválidos.');
       }
       throw err;
@@ -94,7 +95,7 @@ export class ConsultasService {
     try {
       return await this.prisma.consulta.delete({ where: { id: Number(id) } });
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      if (err instanceof PrismaClientKnownRequestError && (err as any).code === 'P2025') {
         throw new NotFoundException(`Consulta ${id} não encontrada.`);
       }
       throw err;

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { CreateMedicoDto } from './dto/create-medico-dto';
 import { UpdateMedicoDto } from './dto/update-medico-dto';
 
@@ -21,7 +22,7 @@ export class MedicosService {
         where: { id: { in: especialidadeIds } },
         select: { id: true },
       });
-      const foundIds = new Set(found.map((e) => Number(e.id)));
+      const foundIds = new Set(found.map((e: any) => Number(e.id)));
       const missing = especialidadeIds.filter((id) => !foundIds.has(Number(id)));
       if (missing.length) {
         throw new BadRequestException(
@@ -31,26 +32,33 @@ export class MedicosService {
     }
 
     try {
-      return await this.prisma.medico.create({
+      const medico = await this.prisma.medico.create({
         data: {
           nome: nome?.trim(),
           crm: crm?.trim(),
           telefone: telefone?.trim(),
           email: email?.trim().toLowerCase(),
-          ...(Array.isArray(especialidadeIds) && especialidadeIds.length > 0
-            ? {
-                especialidade: {
-                  connect: (especialidadeIds ?? []).map((id) => ({ id: BigInt(id) })),
-                },
-              }
-            : {}),
         },
-        include: { especialidade: true },
+      });
+
+      if (Array.isArray(especialidadeIds) && especialidadeIds.length > 0) {
+        await Promise.all(
+          especialidadeIds.map(espId =>
+            this.prisma.medicoEspecialidade.create({
+              data: { medicoId: medico.id, especialidadeId: BigInt(espId) },
+            })
+          )
+        );
+      }
+
+      return this.prisma.medico.findUnique({
+        where: { id: medico.id },
+        include: { medicoEspecialidade: { include: { especialidade: true } } },
       });
     } catch (err) {
       if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2002'
+        err instanceof PrismaClientKnownRequestError &&
+        (err as any).code === 'P2002'
       ) {
         throw new ConflictException(
           'Já existe um médico com o mesmo CRM ou e-mail.',
@@ -62,7 +70,7 @@ export class MedicosService {
 
   async findAll() {
     return this.prisma.medico.findMany({
-      include: { especialidade: true },
+      include: { medicoEspecialidade: { include: { especialidade: true } } },
       orderBy: { id: 'asc' },
     });
   }
@@ -75,7 +83,7 @@ export class MedicosService {
 
     const medico = await this.prisma.medico.findUnique({
       where: { id: numericId },
-      include: { especialidade: true },
+      include: { medicoEspecialidade: { include: { especialidade: true } } },
     });
     if (!medico) {
       throw new NotFoundException(`Médico com ID ${numericId} não encontrado.`);
@@ -117,7 +125,7 @@ export class MedicosService {
         where: { id: { in: idsToValidate } },
         select: { id: true },
       });
-      const foundIds = new Set(found.map((e) => Number(e.id)));
+      const foundIds = new Set(found.map((e: any) => Number(e.id)));
       const missing = idsToValidate.filter((id) => !foundIds.has(Number(id)));
       if (missing.length) {
         throw new BadRequestException(
@@ -126,20 +134,28 @@ export class MedicosService {
       }
     }
 
-    const relationMutation: Prisma.medicoUpdateInput['especialidade'] =
+    const relationMutation: any =
       Array.isArray(replaceEspecialidadeIds)
         ? {
-            set: replaceEspecialidadeIds.map((eid) => ({ id: eid })),
+            set: replaceEspecialidadeIds.map((eid) => ({
+              medicoId_especialidadeId: { medicoId: BigInt(numericId), especialidadeId: BigInt(eid) },
+            })),
           }
         : {
             ...(Array.isArray(especialidadeIdsToConnect) &&
             especialidadeIdsToConnect.length > 0
-              ? { connect: especialidadeIdsToConnect.map((eid) => ({ id: eid })) }
+              ? {
+                  connect: especialidadeIdsToConnect.map((eid) => ({
+                    medicoId_especialidadeId: { medicoId: BigInt(numericId), especialidadeId: BigInt(eid) },
+                  })),
+                }
               : {}),
             ...(Array.isArray(especialidadeIdsToDisconnect) &&
             especialidadeIdsToDisconnect.length > 0
               ? {
-                  disconnect: especialidadeIdsToDisconnect.map((eid) => ({ id: eid })),
+                  disconnect: especialidadeIdsToDisconnect.map((eid) => ({
+                    medicoId_especialidadeId: { medicoId: BigInt(numericId), especialidadeId: BigInt(eid) },
+                  })),
                 }
               : {}),
           };
@@ -157,24 +173,24 @@ export class MedicosService {
             ('connect' in relationMutation ||
               'disconnect' in relationMutation ||
               'set' in relationMutation)
-              ? { especialidade: relationMutation }
+              ? { medicoEspecialidade: relationMutation }
               : {}
           ),
         },
-        include: { especialidade: true },
+        include: { medicoEspecialidade: { include: { especialidade: true } } },
       });
     } catch (err) {
       if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2002'
+        err instanceof PrismaClientKnownRequestError &&
+        (err as any).code === 'P2002'
       ) {
         throw new ConflictException(
           'Já existe um médico com o mesmo CRM ou e-mail.',
         );
       }
       if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2025'
+        err instanceof PrismaClientKnownRequestError &&
+        (err as any).code === 'P2025'
       ) {
         throw new NotFoundException(
           'Recurso relacionado não encontrado ao atualizar as especialidades.',

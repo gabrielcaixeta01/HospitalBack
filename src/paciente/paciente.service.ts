@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePacienteDto } from './dto/create-paciente-dto';
 import { UpdatePacienteDto } from './dto/update-paciente-dto';
-import type { Sexo } from '@prisma/client';
+
+type Sexo = 'M' | 'F' | 'O';
 
 function toDateOrThrow(input: string | Date): Date {
   if (input instanceof Date) {
@@ -49,8 +51,8 @@ export class PacientesService {
         },
       });
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-        const target = ((err.meta?.target as string[]) ?? []).join(', ') || 'campo único';
+      if (err instanceof PrismaClientKnownRequestError && (err as any).code === 'P2002') {
+        const target = (((err as any).meta?.target as string[]) ?? []).join(', ') || 'campo único';
         throw new BadRequestException(`Já existe paciente com ${target}.`);
       }
       throw err;
@@ -71,7 +73,7 @@ export class PacientesService {
     try {
       return await this.prisma.paciente.delete({ where: { id } });
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+      if (err instanceof PrismaClientKnownRequestError && (err as any).code === 'P2025') {
         throw new NotFoundException(`Paciente com ID ${id} não encontrado.`);
       }
       throw err;
@@ -79,7 +81,7 @@ export class PacientesService {
   }
 
   async updatePaciente(id: number, data: UpdatePacienteDto) {
-    const updateData: Prisma.pacienteUpdateInput = {};
+    const updateData: any = {};
 
     if (data.nome != null) updateData.nome = data.nome.trim();
     if (data.cpf != null) updateData.cpf = cleanCpf(data.cpf);
@@ -100,10 +102,10 @@ export class PacientesService {
     try {
       return await this.prisma.paciente.update({ where: { id }, data: updateData });
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        if (err.code === 'P2025') throw new NotFoundException(`Paciente com ID ${id} não encontrado.`);
-        if (err.code === 'P2002') {
-          const target = ((err.meta?.target as string[]) ?? []).join(', ') || 'campo único';
+      if (err instanceof PrismaClientKnownRequestError) {
+        if ((err as any).code === 'P2025') throw new NotFoundException(`Paciente com ID ${id} não encontrado.`);
+        if ((err as any).code === 'P2002') {
+          const target = (((err as any).meta?.target as string[]) ?? []).join(', ') || 'campo único';
           throw new BadRequestException(`Conflito de unicidade em ${target}.`);
         }
       }

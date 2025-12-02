@@ -7,69 +7,79 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model consulta {
+model Consulta {
   id         BigInt   @id @default(autoincrement())
   dataHora   DateTime
   motivo     String?  @db.VarChar(255)
   notas      String?
   medicoId   BigInt
   pacienteId BigInt
-  medico     medico   @relation(fields: [medicoId], references: [id])
-  paciente   paciente @relation(fields: [pacienteId], references: [id])
-  exame      exame[]
+  medico     Medico   @relation(fields: [medicoId], references: [id])
+  paciente   Paciente @relation(fields: [pacienteId], references: [id])
+  exame      Exame[]
+  prescricao Prescricao[]
 
   @@index([medicoId])
   @@index([pacienteId])
+  @@map("consulta")
 }
 
-model especialidade {
+model Especialidade {
   id     BigInt   @id @default(autoincrement())
   nome   String   @unique @db.VarChar(80)
-  medico medico[] @relation("EspecialidadeToMedico")
+  medicoEspecialidade MedicoEspecialidade[]
+
+  @@map("especialidade")
 }
 
-model exame {
+model Exame {
   id         BigInt    @id @default(autoincrement())
   tipo       String    @db.VarChar(120)
   resultado  String?
   dataHora   DateTime?
   consultaId BigInt
-  consulta   consulta  @relation(fields: [consultaId], references: [id])
+  consulta   Consulta  @relation(fields: [consultaId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([consultaId])
+  @@map("exame")
 }
 
-model internacao {
+model Internacao {
   id          BigInt    @id @default(autoincrement())
   pacienteId  BigInt
   leitoId     BigInt
   dataEntrada DateTime
   dataAlta    DateTime?
-  leito       leito     @relation(fields: [leitoId], references: [id])
-  paciente    paciente  @relation(fields: [pacienteId], references: [id])
+  leito       Leito     @relation(fields: [leitoId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  paciente    Paciente  @relation(fields: [pacienteId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([leitoId])
   @@index([pacienteId])
+  @@map("internacao")
 }
 
-model leito {
+model Leito {
   id         BigInt       @id @default(autoincrement())
   codigo     String       @unique @db.VarChar(40)
   status     String       @db.VarChar(40)
-  internacao internacao[]
+  internacao Internacao[]
+
+  @@map("leito")
 }
 
-model medico {
+model Medico {
   id            BigInt          @id @default(autoincrement())
   nome          String          @db.VarChar(120)
   crm           String?         @unique @db.VarChar(40)
   email         String?         @db.VarChar(120)
   telefone      String?         @db.VarChar(40)
-  consulta      consulta[]
-  especialidade especialidade[] @relation("EspecialidadeToMedico")
+  consulta      Consulta[]
+  medicoEspecialidade MedicoEspecialidade[]
+
+  @@map("medico")
 }
 
-model paciente {
+model Paciente {
   id          BigInt       @id @default(autoincrement())
   nome        String       @db.VarChar(120)
   cpf         String       @unique @db.VarChar(14)
@@ -78,8 +88,11 @@ model paciente {
   telefone    String?      @db.VarChar(40)
   email       String?      @db.VarChar(120)
   observacoes String?
-  consulta    consulta[]
-  internacao  internacao[]
+  consulta    Consulta[]
+  internacao  Internacao[]
+  arquivoClinico ArquivoClinico[]
+
+  @@map("paciente")
 }
 
 enum Sexo {
