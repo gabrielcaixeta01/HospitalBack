@@ -87,3 +87,46 @@ enum Sexo {
   F
   O
 }
+
+model Prescricao {
+  id BigInt @id @default(autoincrement())
+  texto String @db.Text
+
+  consultaId BigInt
+
+  consulta Consulta @relation(fields: [consultaId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([consultaId])
+  @@map("prescricao")
+}
+
+
+model ArquivoClinico {
+  id BigInt @id @default(autoincrement())
+  pacienteId BigInt
+  nome_arquivo String @db.VarChar(180)
+  mime_type String @db.VarChar(80)
+
+  conteudo Bytes @db.ByteA 
+  criado_em DateTime @default(now())
+
+  paciente Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([pacienteId])
+  @@map("arquivo_clinico")
+}
+
+
+model MedicoEspecialidade {
+  id BigInt @id @default(autoincrement())
+  medicoId BigInt
+  especialidadeId BigInt
+
+  medico Medico @relation(fields: [medicoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  especialidade Especialidade @relation(fields: [especialidadeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([medicoId, especialidadeId]) 
+  @@index([medicoId])
+  @@index([especialidadeId])
+  @@map("medico_especialidade")
+}
