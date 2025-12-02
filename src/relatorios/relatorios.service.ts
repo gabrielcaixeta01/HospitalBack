@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 
-interface InternacaoAtivaViewRow {
+type InternacaoAtivaRow = {
   internacaoid: bigint;
   nomepaciente: string;
   cpfpaciente: string;
@@ -9,24 +9,24 @@ interface InternacaoAtivaViewRow {
   numeroleito: string;
   dataentrada: Date;
   medicodaultimaconsulta: string | null;
-}
+};
 
 @Injectable()
 export class RelatoriosService {
   constructor(private readonly prisma: PrismaService) {}
 
   async internacoesAtivasDetalhes() {
-    const rows = await this.prisma.$queryRaw<InternacaoAtivaViewRow[]>`
+    const rows = await this.prisma.$queryRaw<InternacaoAtivaRow[]>`
       SELECT
-        "InternacaoID"              AS "internacaoid",
-        "NomePaciente"              AS "nomepaciente",
-        "CPFPaciente"               AS "cpfpaciente",
-        "AlaLeito"                  AS "alaleito",
-        "NumeroLeito"               AS "numeroleito",
-        "DataEntrada"               AS "dataentrada",
-        "MedicoDaUltimaConsulta"    AS "medicodaultimaconsulta"
-      FROM "Internacoes_Ativas_Detalhes"
-    `;
+        internacaoid,
+        nomepaciente,
+        cpfpaciente,
+        alaleito,
+        numeroleito,
+        dataentrada,
+        medicodaultimaconsulta
+      FROM internacoes_ativas_detalhes
+    `; // <<< repara: tudo minúsculo aqui
 
     return rows.map((r) => ({
       internacaoId: Number(r.internacaoid),
