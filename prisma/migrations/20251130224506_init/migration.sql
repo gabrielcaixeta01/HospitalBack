@@ -86,42 +86,39 @@ CREATE TABLE arquivo_clinico (
     paciente_id     BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE,
     nome_arquivo    VARCHAR(180) NOT NULL,
     mime_type       VARCHAR (80) NOT NULL,
-    conteudo        BYTEA NOT NULL, -- Campo para dados binários (PDF, imagens)
+    conteudo        BYTEA NOT NULL, 
     criado_em       TIMESTAMP NOT NULL DEFAULT now()
 );
 
 
 
---  TRIGGER: Atualização Automática de Status do Leito
 
--- Função: Atualiza 'ocupado = TRUE' quando uma internação ativa é criada, e FALSE na alta.
 CREATE OR REPLACE FUNCTION Atualizar_Status_Leito_Internacao()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Se é um INSERT (nova internação)
+    
     IF TG_OP = 'INSERT' THEN
-        -- Marcar leito como ocupado
+        
         UPDATE leito
         SET ocupado = TRUE
         WHERE id = NEW.leito_id;
     
-    -- Se é um UPDATE
+   
     ELSIF TG_OP = 'UPDATE' THEN
-        -- Se a data de alta foi definida (paciente recebeu alta)
+        
         IF OLD.data_alta IS NULL AND NEW.data_alta IS NOT NULL THEN
-            -- Verificar se há outras internações ativas no mesmo leito
+            
             IF NOT EXISTS (
                 SELECT 1 FROM internacao 
                 WHERE leito_id = NEW.leito_id AND data_alta IS NULL AND id != NEW.id
             ) THEN
-                -- Nenhuma internação ativa, desocupar o leito
                 UPDATE leito
                 SET ocupado = FALSE
                 WHERE id = NEW.leito_id;
             END IF;
         END IF;
         
-        -- Se a data de alta foi removida (reativar internação)
+        
         IF OLD.data_alta IS NOT NULL AND NEW.data_alta IS NULL THEN
             UPDATE leito
             SET ocupado = TRUE
@@ -133,15 +130,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger: Executa a função após INSERT ou UPDATE em internacao
 CREATE TRIGGER Leito_Ocupado_Apos_Internacao
 AFTER INSERT OR UPDATE ON internacao
 FOR EACH ROW
 EXECUTE FUNCTION Atualizar_Status_Leito_Internacao();
 
--- PROCEDURE (FUNCTION): Registrar Consulta Verificada
 
--- Função que registra uma consulta verificando se o médico possui a especialidade informada.
 CREATE OR REPLACE FUNCTION Registrar_Consulta_Verificada(
     p_paciente_id BIGINT,
     p_medico_id BIGINT,
@@ -154,14 +148,13 @@ DECLARE
     v_especialidade_id BIGINT;
     v_consulta_id BIGINT;
 BEGIN
-    -- 1. Verifica se a especialidade existe
+   
     SELECT id INTO v_especialidade_id FROM especialidade WHERE nome = p_especialidade_nome;
 
     IF v_especialidade_id IS NULL THEN
         RAISE EXCEPTION 'Especialidade "%" não encontrada.', p_especialidade_nome;
     END IF;
 
-    -- 2. Verifica se o médico possui a especialidade
     IF NOT EXISTS (
         SELECT 1 FROM medico_especialidade ME
         WHERE ME.medico_id = p_medico_id AND ME.especialidade_id = v_especialidade_id
@@ -169,7 +162,6 @@ BEGIN
         RAISE EXCEPTION 'Médico (ID: %) não possui a especialidade "%".', p_medico_id, p_especialidade_nome;
     END IF;
 
-    -- 3. Insere a consulta
     INSERT INTO consulta (paciente_id, medico_id, data_hora, motivo, status)
     VALUES (p_paciente_id, p_medico_id, p_data_hora, p_motivo, 'AGENDADA')
     RETURNING id INTO v_consulta_id;
@@ -178,10 +170,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
---  VIEW: Internações Ativas Detalhadas
 
--- View que lista todas as internações ativas, incluindo detalhes do paciente, leito e o médico da última consulta.
-CREATE VIEW Internacoes_Ativas_Detalhes AS
 SELECT
     I.id AS InternacaoID,
     P.nome AS NomePaciente,
@@ -197,7 +186,7 @@ JOIN
 JOIN
     leito L ON I.leito_id = L.id
 LEFT JOIN LATERAL
-    ( -- Subconsulta para encontrar o médico da última consulta antes da internação
+    ( 
         SELECT M.nome
         FROM consulta C
         JOIN medico M ON C.medico_id = M.id
