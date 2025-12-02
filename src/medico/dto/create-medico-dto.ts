@@ -19,5 +19,5 @@ export class CreateMedicoDto {
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
-  especialidadesIds?: number[];
+  especialidadeIds?: number[];
 }

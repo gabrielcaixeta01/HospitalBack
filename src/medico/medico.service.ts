@@ -16,9 +16,7 @@ export class MedicosService {
 
   async findAll() {
     return this.prisma.medico.findMany({
-      include: {
-        especialidades: true,
-      },
+      include: { especialidades: true },
       orderBy: { id: 'asc' },
     });
   }
@@ -36,15 +34,13 @@ export class MedicosService {
   }
 
   async create(data: CreateMedicoDto) {
-    const { especialidadesIds, ...rest } = data;
+    const { especialidadeIds, ...rest } = data;
 
     return this.prisma.medico.create({
       data: {
         ...rest,
-        especialidades: especialidadesIds?.length
-          ? {
-              connect: especialidadesIds.map((id) => ({ id })),
-            }
+        especialidades: especialidadeIds?.length
+          ? { connect: especialidadeIds.map((id) => ({ id })) }
           : undefined,
       },
       include: { especialidades: true },
@@ -55,62 +51,39 @@ export class MedicosService {
     await this.ensureMedicoExists(id);
 
     const {
-      replaceEspecialidadesIds,
-      especialidadesIdsToConnect,
-      especialidadesIdsToDisconnect,
+      replaceEspecialidadeIds,
+      especialidadeIdsToConnect,
+      especialidadeIdsToDisconnect,
       ...rest
     } = data;
 
-    // atualiza campos básicos do médico
-    await this.prisma.medico.update({
+    return this.prisma.medico.update({
       where: { id },
-      data: rest,
+      data: {
+        ...rest,
+
+        especialidades: {
+          ...(replaceEspecialidadeIds
+            ? { set: replaceEspecialidadeIds.map((eId) => ({ id: eId })) }
+            : {}),
+
+          ...(especialidadeIdsToConnect?.length
+            ? { connect: especialidadeIdsToConnect.map((eId) => ({ id: eId })) }
+            : {}),
+
+          ...(especialidadeIdsToDisconnect?.length
+            ? {
+                disconnect: especialidadeIdsToDisconnect.map((eId) => ({ id: eId })),
+              }
+            : {}),
+        },
+      },
+      include: { especialidades: true },
     });
-
-    // substituir TODAS as especialidades
-    if (replaceEspecialidadesIds) {
-      await this.prisma.medico.update({
-        where: { id },
-        data: {
-          especialidades: {
-            set: replaceEspecialidadesIds.map((eId) => ({ id: eId })),
-          },
-        },
-      });
-    }
-
-    // conectar novas
-    if (especialidadesIdsToConnect?.length) {
-      await this.prisma.medico.update({
-        where: { id },
-        data: {
-          especialidades: {
-            connect: especialidadesIdsToConnect.map((eId: any) => ({ id: eId })),
-          },
-        },
-      });
-    }
-
-    // desconectar algumas
-    if (especialidadesIdsToDisconnect?.length) {
-      await this.prisma.medico.update({
-        where: { id },
-        data: {
-          especialidades: {
-            disconnect: especialidadesIdsToDisconnect.map((eId: any) => ({ id: eId })),
-          },
-        },
-      });
-    }
-
-    return this.findOne(id);
   }
 
   async delete(id: number) {
     await this.ensureMedicoExists(id);
-
-    return this.prisma.medico.delete({
-      where: { id },
-    });
+    return this.prisma.medico.delete({ where: { id } });
   }
 }

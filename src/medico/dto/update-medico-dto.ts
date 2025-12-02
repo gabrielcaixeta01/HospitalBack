@@ -20,15 +20,15 @@ export class UpdateMedicoDto {
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
-  especialidadesIdsToConnect?: number[];
+  especialidadeIdsToConnect?: number[];
 
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
-  especialidadesIdsToDisconnect?: number[];
+  especialidadeIdsToDisconnect?: number[];
 
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })
-  replaceEspecialidadesIds?: number[];
+  replaceEspecialidadeIds?: number[];
 }
