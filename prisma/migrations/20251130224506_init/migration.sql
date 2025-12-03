@@ -173,6 +173,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE VIEW internacoes_ativas_detalhes AS
 SELECT
     I.id AS InternacaoID,
     P.nome AS NomePaciente,
@@ -188,7 +189,7 @@ JOIN
 JOIN
     leito L ON I.leito_id = L.id
 LEFT JOIN LATERAL
-    ( 
+    (
         SELECT M.nome
         FROM consulta C
         JOIN medico M ON C.medico_id = M.id
