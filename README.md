@@ -2,38 +2,20 @@
 
 API REST do sistema de gestão hospitalar HospCare, desenvolvida com NestJS, Prisma ORM e PostgreSQL.
 
-## Tecnologias Utilizadas
-
-- Node.js 18+
-- NestJS
-- Prisma ORM
-- PostgreSQL
-- JWT
-- BCrypt
-- Docker (opcional)
 
 ## Funcionalidades
-
-### Autenticação e Usuários
-- Registro
-- Login com JWT
-- Proteção de rotas
-- Armazenamento seguro de senha
 
 ### Médicos e Especialidades
 - Cadastro e gerenciamento
 - Associação entre médico e especialidade
-- Consulta por especialidade
 
 ### Pacientes
 - CRUD completo
-- Histórico de consultas e internações
 - Upload de arquivos clínicos
 
 ### Consultas
 - Agendamentos
 - Notas médicas
-- Listagens filtradas
 
 ### Leitos
 - Cadastro e status
@@ -56,10 +38,7 @@ Crie um arquivo `.env` com:
 
 ```
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/hospital"
-JWT_SECRET="chave_secreta_segura"
-JWT_EXPIRES_IN="7d"
 PORT=4000
-NODE_ENV=development
 ```
 
 ### Instalar dependências
@@ -99,12 +78,6 @@ npx prisma studio
 ```
 
 ## Endpoints Principais
-
-### Autenticação
-| Método | Rota |
-|--------|------|
-| POST | /auth/register |
-| POST | /auth/login |
 
 ### Pacientes
 | Método | Rota |
