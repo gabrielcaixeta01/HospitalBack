@@ -43,7 +43,7 @@ export class RelatoriosService {
       FROM internacoes_ativas_detalhes
     `;
 
-    return rows.map((r) => ({
+    return rows.map((r: InternacaoAtivaRow) => ({
       internacaoId: Number(r.internacaoid),
 
       // não temos o id do paciente na view, então deixo null
