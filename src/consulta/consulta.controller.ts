@@ -3,10 +3,15 @@ import { ConsultasService } from './consulta.service';
 import { CreateConsultaDto } from './dto/create-consulta-dto';
 import { UpdateConsultaDto } from './dto/update-consulta-dto';
 import { RegistrarConsultaVerificadaDto } from './dto/registrar-consulta-verificada.dto';
+import { PrescricaoService } from 'src/prescricao/prescricao.service';
+import { CreatePrescricaoForConsultaDto } from 'src/prescricao/dto/create-prescricao-for-consulta.dto';
 
 @Controller('consultas')
 export class ConsultasController {
-  constructor(private readonly consultasService: ConsultasService) {}
+  constructor(
+    private readonly consultasService: ConsultasService,
+    private readonly prescricaoService: PrescricaoService,
+  ) {}
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
@@ -43,6 +48,15 @@ export class ConsultasController {
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async registrar(@Body() dto: RegistrarConsultaVerificadaDto) {
     return this.consultasService.registrarConsultaVerificada(dto);
+  }
+
+  @Post(':id/prescricoes')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async createPrescricao(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(new ValidationPipe({ whitelist: true })) dto: CreatePrescricaoForConsultaDto,
+  ) {
+    return this.prescricaoService.create({ consultaId: id, texto: dto.texto });
   }
 
   

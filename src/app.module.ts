@@ -1,8 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-
 import { PrismaModule } from "./prisma/prisma.module";
-
 import { PacientesModule } from "./paciente/paciente.module";
 import { MedicosModule } from "./medico/medico.module";
 import { EspecialidadesModule } from "./especialidades/especialidades.module";
@@ -11,12 +9,11 @@ import { ExameModule } from "./exame/exame.module";
 import { InternacoesModule } from "./internacao/internacao.module";
 import { LeitosModule } from "./leito/leito.module";
 import { ArquivoClinicoModule } from "./arquivo-clinico/arquivo-clinico.module";
-
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-
 import { RelatoriosController } from "./relatorios/relatorios.controller";
 import { RelatoriosService } from "./relatorios/relatorios.service";
+import { PrescricaoModule } from "./prescricao/prescricao.module";
 
 @Module({
   imports: [
@@ -29,8 +26,10 @@ import { RelatoriosService } from "./relatorios/relatorios.service";
     ConsultasModule,
     ExameModule,
     InternacoesModule,
+    PrescricaoModule,
     LeitosModule,
     ArquivoClinicoModule,
+    PrescricaoModule,
   ],
   controllers: [AppController, RelatoriosController],
   providers: [AppService, RelatoriosService],

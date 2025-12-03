@@ -57,6 +57,7 @@ export class ConsultasService {
       include: {
         medico: { select: { id: true, nome: true } },
         paciente: { select: { id: true, nome: true } },
+        prescricao: true,
       },
     });
     if (!consulta) throw new NotFoundException(`Consulta ${id} não encontrada.`);
