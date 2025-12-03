@@ -16,7 +16,7 @@ export class MedicosService {
 
   async findAll() {
     return this.prisma.medico.findMany({
-      include: { especialidades: true },
+      include: { especialidade: true },
       orderBy: { id: 'asc' },
     });
   }
@@ -27,7 +27,7 @@ export class MedicosService {
     return this.prisma.medico.findUnique({
       where: { id },
       include: {
-        especialidades: true,
+        especialidade: true,
         consulta: true,
       },
     });
@@ -39,11 +39,11 @@ export class MedicosService {
     return this.prisma.medico.create({
       data: {
         ...rest,
-        especialidades: especialidadeIds?.length
+        especialidade: especialidadeIds?.length
           ? { connect: especialidadeIds.map((id) => ({ id })) }
           : undefined,
       },
-      include: { especialidades: true },
+      include: { especialidade: true },
     });
   }
 
@@ -62,7 +62,7 @@ export class MedicosService {
       data: {
         ...rest,
 
-        especialidades: {
+        especialidade: {
           ...(replaceEspecialidadeIds
             ? { set: replaceEspecialidadeIds.map((eId) => ({ id: eId })) }
             : {}),
@@ -78,7 +78,7 @@ export class MedicosService {
             : {}),
         },
       },
-      include: { especialidades: true },
+      include: { especialidade: true },
     });
   }
 

@@ -22,6 +22,7 @@ export class ConsultasService {
           notas: data.notas,
           medicoId: Number(data.medicoId),
           pacienteId: Number(data.pacienteId),
+          especialidadeId: Number(data.especialidadeId),
         },
         include: {
           medico: { select: { id: true, nome: true } },
