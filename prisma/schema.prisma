@@ -32,9 +32,22 @@ model Especialidade {
   nome                String   @unique @db.VarChar(80)
   
   consulta            Consulta[]
-  medico             Medico[]
+  medicoEspecialidade MedicoEspecialidade[]
 
   @@map("especialidade")
+}
+
+model MedicoEspecialidade {
+  id              BigInt        @id @default(autoincrement())
+  medicoId        BigInt
+  especialidadeId BigInt
+  medico          Medico        @relation(fields: [medicoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  especialidade   Especialidade @relation(fields: [especialidadeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([medicoId, especialidadeId])
+  @@index([medicoId])
+  @@index([especialidadeId])
+  @@map("medico_especialidade")
 }
 
 model Exame {
@@ -79,8 +92,8 @@ model Medico {
   email    String?  @db.VarChar(120)
   telefone String?  @db.VarChar(40)
 
-  consulta      Consulta[]
-  especialidade Especialidade[] 
+  consulta             Consulta[]
+  especialidades       MedicoEspecialidade[]
 
   @@map("medico")
 }

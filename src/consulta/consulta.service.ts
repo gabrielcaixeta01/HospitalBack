@@ -14,6 +14,22 @@ export class ConsultasService {
       throw new BadRequestException('Envie dataHora em ISO UTC, ex: 2025-11-03T13:30:00Z');
     }
 
+    // Validar se o médico tem a especialidade
+    const medicoEspecialidade = await this.prisma.medicoEspecialidade.findUnique({
+      where: {
+        medicoId_especialidadeId: {
+          medicoId: Number(data.medicoId),
+          especialidadeId: Number(data.especialidadeId),
+        },
+      },
+    });
+
+    if (!medicoEspecialidade) {
+      throw new BadRequestException(
+        `Médico (ID: ${data.medicoId}) não possui a especialidade (ID: ${data.especialidadeId}).`,
+      );
+    }
+
     try {
       return await this.prisma.consulta.create({
         data: {
