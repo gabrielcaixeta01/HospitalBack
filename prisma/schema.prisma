@@ -30,8 +30,9 @@ model Consulta {
 model Especialidade {
   id                  BigInt   @id @default(autoincrement())
   nome                String   @unique @db.VarChar(80)
-  medicoEspecialidade MedicoEspecialidade[]
+  
   consulta            Consulta[]
+  medico             Medico[]
 
   @@map("especialidade")
 }
@@ -79,7 +80,7 @@ model Medico {
   telefone String?  @db.VarChar(40)
 
   consulta      Consulta[]
-  especialidades Especialidade[] @relation("MedicoEspecialidades")
+  especialidade Especialidade[] 
 
   @@map("medico")
 }
