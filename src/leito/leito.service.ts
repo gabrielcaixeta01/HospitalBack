@@ -1,12 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class LeitoService {
   constructor(private prisma: PrismaService) {}
 
+  private async recalcularStatusDoLeito(leitoId: bigint) {
+    const ativa = await this.prisma.internacao.findFirst({
+      where: { leitoId, dataAlta: null },
+    });
+
+    const leito = await this.prisma.leito.findUnique({
+      where: { id: leitoId },
+    });
+
+    if (!leito) throw new NotFoundException('Leito não encontrado.');
+
+    if (leito.status === 'manutencao') {
+      if (ativa) {
+        await this.prisma.leito.update({
+          where: { id: leitoId },
+          data: { status: 'ocupado' },
+        });
+      }
+      return;
+    }
+
+    await this.prisma.leito.update({
+      where: { id: leitoId },
+      data: { status: ativa ? 'ocupado' : 'livre' },
+    });
+  }
+
+
   async findAll() {
-    return this.prisma.leito.findMany({
+    const leitos = await this.prisma.leito.findMany({
       include: {
         internacao: {
           where: { dataAlta: null },
@@ -15,10 +43,13 @@ export class LeitoService {
       },
       orderBy: { id: 'asc' },
     });
+
+    return leitos;
   }
 
+  
   async findOne(id: number) {
-    return this.prisma.leito.findUnique({
+    const leito = await this.prisma.leito.findUnique({
       where: { id },
       include: {
         internacao: {
@@ -27,8 +58,13 @@ export class LeitoService {
         },
       },
     });
+
+    if (!leito) throw new NotFoundException('Leito não encontrado.');
+
+    return leito;
   }
 
+  
   async create(data: { codigo: string }) {
     return this.prisma.leito.create({
       data: {
@@ -38,23 +74,41 @@ export class LeitoService {
     });
   }
 
+  
   async update(id: number, data: Partial<{ codigo: string; status: string }>) {
-    return this.prisma.leito.update({
+    const leito = await this.prisma.leito.update({
       where: { id },
       data,
     });
+
+   
+    await this.recalcularStatusDoLeito(BigInt(id));
+
+    return leito;
   }
 
-  async updateStatus(id: number, status: 'livre' | 'ocupado' | 'manutencao') {
-    return this.prisma.leito.update({
-      where: { id },
+
+  async updateStatus(
+    id: number,
+    status: 'livre' | 'ocupado' | 'manutencao',
+  ) {
+    const leitoId = BigInt(id);
+
+    await this.prisma.leito.update({
+      where: { id: leitoId },
       data: { status },
     });
+
+    await this.recalcularStatusDoLeito(leitoId);
+
+    return this.findOne(id);
   }
 
   async remove(id: number) {
-    return this.prisma.leito.delete({
+    const deleted = await this.prisma.leito.delete({
       where: { id },
     });
+
+    return deleted;
   }
 }
