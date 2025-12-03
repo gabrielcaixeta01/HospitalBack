@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Consulta {
@@ -32,7 +33,7 @@ model Especialidade {
   nome                String   @unique @db.VarChar(80)
   
   consulta            Consulta[]
-  medico             Medico[]
+  medico             Medico[] @relation("EspecialidadeToMedico")
 
   @@map("especialidade")
 }
@@ -80,7 +81,7 @@ model Medico {
   telefone String?  @db.VarChar(40)
 
   consulta      Consulta[]
-  especialidade Especialidade[] 
+  especialidade Especialidade[] @relation("EspecialidadeToMedico")
 
   @@map("medico")
 }
