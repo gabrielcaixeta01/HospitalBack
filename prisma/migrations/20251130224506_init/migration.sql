@@ -36,15 +36,16 @@ CREATE TABLE leito (
     UNIQUE (ala, numero)
 );
 
--- Tabela CONSULTA (FKs Paciente e Médico)
+-- Tabela CONSULTA (FKs Paciente, Médico e Especialidade)
 CREATE TABLE consulta (
-    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    paciente_id BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE,
-    medico_id   BIGINT NOT NULL REFERENCES medico (id) ON DELETE RESTRICT,
-    data_hora   TIMESTAMP NOT NULL,
-    motivo      VARCHAR (255),
-    status      VARCHAR (20) NOT NULL DEFAULT 'AGENDADA',
-    notas       TEXT
+    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    paciente_id     BIGINT NOT NULL REFERENCES paciente (id) ON DELETE CASCADE,
+    medico_id       BIGINT NOT NULL REFERENCES medico (id) ON DELETE RESTRICT,
+    especialidade_id BIGINT NOT NULL REFERENCES especialidade (id) ON DELETE RESTRICT,
+    data_hora       TIMESTAMP NOT NULL,
+    motivo          VARCHAR (255),
+    status          VARCHAR (20) NOT NULL DEFAULT 'AGENDADA',
+    notas           TEXT
 );
 
 -- Tabela INTERNACAO (FKs Paciente e Leito)
@@ -162,8 +163,9 @@ BEGIN
         RAISE EXCEPTION 'Médico (ID: %) não possui a especialidade "%".', p_medico_id, p_especialidade_nome;
     END IF;
 
-    INSERT INTO consulta (paciente_id, medico_id, data_hora, motivo, status)
-    VALUES (p_paciente_id, p_medico_id, p_data_hora, p_motivo, 'AGENDADA')
+    -- 3. Insere a consulta com a especialidade_id
+    INSERT INTO consulta (paciente_id, medico_id, especialidade_id, data_hora, motivo, status)
+    VALUES (p_paciente_id, p_medico_id, v_especialidade_id, p_data_hora, p_motivo, 'AGENDADA')
     RETURNING id INTO v_consulta_id;
 
     RETURN v_consulta_id;

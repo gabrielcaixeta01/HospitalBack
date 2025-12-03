@@ -23,4 +23,9 @@ export class UpdateConsultaDto {
   @IsInt()
   @IsPositive()
   pacienteId?: number;
+
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  especialidadeId?: number;
 }
