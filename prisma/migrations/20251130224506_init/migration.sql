@@ -175,27 +175,28 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE VIEW internacoes_ativas_detalhes AS
 SELECT
-    I.id AS InternacaoID,
-    P.nome AS NomePaciente,
-    P.cpf AS CPFPaciente,
-    L.ala AS AlaLeito,
-    L.numero AS NumeroLeito,
-    I.data_entrada AS DataEntrada,
-    M_Ultima.nome AS MedicoDaUltimaConsulta
+    I.id            AS InternacaoID,
+    P.nome          AS NomePaciente,
+    P.cpf           AS CPFPaciente,
+    L."codigo"      AS AlaLeito,      -- vem de leito."codigo"
+    L."status"      AS NumeroLeito,   -- vem de leito."status"
+    I."dataEntrada" AS DataEntrada,
+    M_Ultima.nome   AS MedicoDaUltimaConsulta
 FROM
     internacao I
 JOIN
-    paciente P ON I.paciente_id = P.id
+    paciente P ON I."pacienteId" = P.id    -- coluna real
 JOIN
-    leito L ON I.leito_id = L.id
+    leito L    ON I."leitoId"    = L.id    -- coluna real
 LEFT JOIN LATERAL
     (
         SELECT M.nome
         FROM consulta C
-        JOIN medico M ON C.medico_id = M.id
-        WHERE C.paciente_id = P.id AND C.data_hora < I.data_entrada
-        ORDER BY C.data_hora DESC
+        JOIN medico M ON C."medicoId" = M.id       -- coluna real
+        WHERE C."pacienteId" = P.id                -- coluna real
+          AND C."dataHora"   < I."dataEntrada"     -- coluna real
+        ORDER BY C."dataHora" DESC
         LIMIT 1
     ) AS M_Ultima ON TRUE
 WHERE
-    I.data_alta IS NULL;
+    I."dataAlta" IS NULL;       
