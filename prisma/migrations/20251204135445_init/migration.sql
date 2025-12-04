@@ -107,80 +107,54 @@ CREATE TABLE "_EspecialidadeToMedico" (
     CONSTRAINT "_EspecialidadeToMedico_AB_pkey" PRIMARY KEY ("A","B")
 );
 
--- CreateIndex
 CREATE INDEX "consulta_medicoId_idx" ON "consulta"("medicoId");
 
--- CreateIndex
 CREATE INDEX "consulta_pacienteId_idx" ON "consulta"("pacienteId");
 
--- CreateIndex
 CREATE INDEX "consulta_especialidadeId_idx" ON "consulta"("especialidadeId");
 
--- CreateIndex
 CREATE UNIQUE INDEX "especialidade_nome_key" ON "especialidade"("nome");
 
--- CreateIndex
 CREATE INDEX "exame_consultaId_idx" ON "exame"("consultaId");
 
--- CreateIndex
 CREATE INDEX "internacao_leitoId_idx" ON "internacao"("leitoId");
 
--- CreateIndex
 CREATE INDEX "internacao_pacienteId_idx" ON "internacao"("pacienteId");
 
--- CreateIndex
 CREATE UNIQUE INDEX "leito_codigo_key" ON "leito"("codigo");
 
--- CreateIndex
 CREATE UNIQUE INDEX "medico_crm_key" ON "medico"("crm");
 
--- CreateIndex
 CREATE UNIQUE INDEX "paciente_cpf_key" ON "paciente"("cpf");
 
--- CreateIndex
 CREATE INDEX "prescricao_consultaId_idx" ON "prescricao"("consultaId");
 
--- CreateIndex
 CREATE INDEX "arquivo_clinico_pacienteId_idx" ON "arquivo_clinico"("pacienteId");
 
--- CreateIndex
 CREATE INDEX "_EspecialidadeToMedico_B_index" ON "_EspecialidadeToMedico"("B");
 
--- AddForeignKey
 ALTER TABLE "consulta" ADD CONSTRAINT "consulta_medicoId_fkey" FOREIGN KEY ("medicoId") REFERENCES "medico"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "consulta" ADD CONSTRAINT "consulta_pacienteId_fkey" FOREIGN KEY ("pacienteId") REFERENCES "paciente"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "consulta" ADD CONSTRAINT "consulta_especialidadeId_fkey" FOREIGN KEY ("especialidadeId") REFERENCES "especialidade"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "exame" ADD CONSTRAINT "exame_consultaId_fkey" FOREIGN KEY ("consultaId") REFERENCES "consulta"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "internacao" ADD CONSTRAINT "internacao_leitoId_fkey" FOREIGN KEY ("leitoId") REFERENCES "leito"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "internacao" ADD CONSTRAINT "internacao_pacienteId_fkey" FOREIGN KEY ("pacienteId") REFERENCES "paciente"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "prescricao" ADD CONSTRAINT "prescricao_consultaId_fkey" FOREIGN KEY ("consultaId") REFERENCES "consulta"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "arquivo_clinico" ADD CONSTRAINT "arquivo_clinico_pacienteId_fkey" FOREIGN KEY ("pacienteId") REFERENCES "paciente"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "_EspecialidadeToMedico" ADD CONSTRAINT "_EspecialidadeToMedico_A_fkey" FOREIGN KEY ("A") REFERENCES "especialidade"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
 ALTER TABLE "_EspecialidadeToMedico" ADD CONSTRAINT "_EspecialidadeToMedico_B_fkey" FOREIGN KEY ("B") REFERENCES "medico"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 
 
-------------------------------------------------------------
--- 1) VIEW: internações ativas com detalhes
-------------------------------------------------------------
 
 CREATE OR REPLACE VIEW internacoes_ativas_detalhes AS
 SELECT
@@ -208,25 +182,18 @@ WHERE I."dataAlta" IS NULL;
 
 
 
-------------------------------------------------------------
--- 2) TRIGGER: atualizar status do leito automaticamente
-------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION atualizar_status_leito_internacao()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Inserção de nova internação: marca leito como ocupado
     IF TG_OP = 'INSERT' THEN
         UPDATE "leito"
         SET status = 'ocupado'
         WHERE id = NEW."leitoId";
     END IF;
 
-    -- Atualização: caso tenha sido registrada alta
     IF TG_OP = 'UPDATE' THEN
-        -- Alta recém-registrada: OLD.dataAlta era NULL, NEW.dataAlta passou a ter valor
         IF OLD."dataAlta" IS NULL AND NEW."dataAlta" IS NOT NULL THEN
-            -- Só libera o leito se não houver outra internação ativa nele
             IF NOT EXISTS (
                 SELECT 1 FROM "internacao"
                 WHERE "leitoId" = NEW."leitoId"
@@ -251,11 +218,7 @@ EXECUTE FUNCTION atualizar_status_leito_internacao();
 
 
 
-------------------------------------------------------------
--- 3) FUNCTION + PROCEDURE + TRIGGER: validar especialidade do médico
-------------------------------------------------------------
 
--- Função auxiliar: verifica se o médico possui a especialidade
 CREATE OR REPLACE FUNCTION validar_medico_especialidade(
     p_medico_id BIGINT,
     p_especialidade_id BIGINT
@@ -265,14 +228,13 @@ BEGIN
     RETURN EXISTS (
         SELECT 1
         FROM "_EspecialidadeToMedico" em
-        WHERE em."A" = p_especialidade_id  -- A = Especialidade.id
-          AND em."B" = p_medico_id        -- B = Medico.id
+        WHERE em."A" = p_especialidade_id  
+          AND em."B" = p_medico_id       
     );
 END;
 $$ LANGUAGE plpgsql;
 
 
--- Procedure para criar consulta validada (pode ser usada via SQL manual ou rawQuery)
 CREATE OR REPLACE PROCEDURE criar_consulta_validada(
     p_paciente_id      BIGINT,
     p_medico_id        BIGINT,
@@ -307,7 +269,6 @@ END;
 $$;
 
 
--- Trigger para garantir a integridade mesmo se não usarem a procedure
 CREATE OR REPLACE FUNCTION checar_consulta_especialidade_trigger()
 RETURNS TRIGGER AS $$
 BEGIN
