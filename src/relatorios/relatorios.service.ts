@@ -1,29 +1,26 @@
-// src/relatorios/relatorios.service.ts
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 
 type InternacaoAtivaRow = {
-  internacaoid: bigint;
-  nomepaciente: string;
-  cpfpaciente: string;
-  alaleito: string;
-  numeroleito: string;
-  dataentrada: Date;
-  medicodaultimaconsulta: string | null;
+  internacao_id: bigint;
+  leitoId: bigint;
+  nome_paciente: string;
+  cpf_paciente: string;
+  codigo_leito: string;
+  status_leito: string;
+  data_entrada: Date;
+  medico_da_ultima_consulta: string | null;
 };
 
 type InternacaoDetalhe = {
   internacaoId: number;
-  pacienteId: number | null;
   pacienteNome: string | null;
+  cpf: string | null;
   leitoId: number | null;
   leitoCodigo: string | null;
+  statusLeito: string | null;
   dataEntrada: string | null;
-  dataPrevistaAlta: string | null;
-  medicoId: number | null;
   medicoNome: string | null;
-  setor: string | null;
-  observacoes: string | null;
 };
 
 @Injectable()
@@ -33,40 +30,33 @@ export class RelatoriosService {
   async internacoesAtivasDetalhes(): Promise<InternacaoDetalhe[]> {
     const rows = await this.prisma.$queryRaw<InternacaoAtivaRow[]>`
       SELECT
-        internacaoid,
-        nomepaciente,
-        cpfpaciente,
-        alaleito,
-        numeroleito,
-        dataentrada,
-        medicodaultimaconsulta
+        internacao_id,
+        "leitoId",
+        nome_paciente,
+        cpf_paciente,
+        codigo_leito,
+        status_leito,
+        data_entrada,
+        medico_da_ultima_consulta
       FROM internacoes_ativas_detalhes
     `;
 
-    return rows.map((r: InternacaoAtivaRow) => ({
-      internacaoId: Number(r.internacaoid),
+    return rows.map((r) => ({
+      internacaoId: Number(r.internacao_id),
 
-      // não temos o id do paciente na view, então deixo null
-      pacienteId: null,
-      pacienteNome: r.nomepaciente,
+      pacienteNome: r.nome_paciente,
+      cpf: r.cpf_paciente,
 
-      // idem para id do leito – se quiser mesmo, dá pra incluir L.id na view depois
-      leitoId: null,
-      leitoCodigo: `${r.alaleito} - ${r.numeroleito}`,
+      leitoId: Number(r.leitoId),
+      leitoCodigo: r.codigo_leito,
+      statusLeito: r.status_leito,
 
       dataEntrada:
-        r.dataentrada instanceof Date
-          ? r.dataentrada.toISOString()
-          : (r.dataentrada as unknown as string),
+        r.data_entrada instanceof Date
+          ? r.data_entrada.toISOString()
+          : (r.data_entrada as any),
 
-      // por enquanto você não tem previsão de alta no banco
-      dataPrevistaAlta: null,
-
-      medicoId: null,
-      medicoNome: r.medicodaultimaconsulta,
-
-      setor: null,
-      observacoes: null,
+      medicoNome: r.medico_da_ultima_consulta,
     }));
   }
 }

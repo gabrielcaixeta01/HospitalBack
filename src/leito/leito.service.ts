@@ -34,28 +34,25 @@ export class LeitoService {
 
 
   async findAll() {
-  const leitos = await this.prisma.leito.findMany({
-    orderBy: { id: 'asc' },
-  });
+    const leitos = await this.prisma.leito.findMany({
+      orderBy: { id: 'asc' },
+    });
 
-  const ativas = await this.prisma.$queryRaw<
-    { leito_id: bigint; paciente_nome: string; }[]
-  >`SELECT leito_id, paciente_nome FROM internacoes_ativas`;
+    const ativas = await this.prisma.$queryRaw<
+      { leitoId: bigint; nome_paciente: string }[]
+    >`SELECT "leitoId", nome_paciente FROM internacoes_ativas_detalhes`;
 
-  const mapa = new Map<number, string>();
-  for (const i of ativas) {
-    mapa.set(Number(i.leito_id), i.paciente_nome);
+    const mapa = new Map<number, string>();
+    for (const i of ativas) {
+      mapa.set(Number(i.leitoId), i.nome_paciente);
+    }
+
+    return leitos.map((l) => ({
+      ...l,
+      pacienteNome: mapa.get(Number(l.id)) ?? null,
+      status: mapa.has(Number(l.id)) ? 'ocupado' : l.status,
+    }));
   }
-
-  return leitos.map((l) => ({
-    ...l,
-    pacienteNome: mapa.get(Number(l.id)) ?? null,
-    status:
-      mapa.has(Number(l.id))
-        ? "ocupado"
-        : l.status,
-  }));
-}
 
   
   async findOne(id: number) {
